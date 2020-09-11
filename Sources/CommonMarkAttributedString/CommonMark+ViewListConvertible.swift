@@ -13,7 +13,7 @@ import UIKit
 
 extension Node: ViewListConvertible {
   
-  @objc public func makeViews(with attributes: [NSAttributedString.Key: Any], imageView: @escaping (URL) -> UIImageView) throws -> [UIView] {
+  @objc func makeViews(with attributes: [NSAttributedString.Key: Any], imageView: @escaping (URL) -> UIImageView) throws -> [UIView] {
     switch self {
     case let image as Image:
       guard let urlString = image.urlString, let url = URL(string: urlString) else {
