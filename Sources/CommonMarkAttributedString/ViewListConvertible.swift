@@ -9,7 +9,7 @@
 import Foundation
 import UIKit
 
-protocol ViewListConvertible {
+public protocol ViewListConvertible {
   func makeViews(with attributes: [NSAttributedString.Key: Any], imageView: @escaping (URL) -> UIImageView) throws -> [UIView]
 }
 #endif
