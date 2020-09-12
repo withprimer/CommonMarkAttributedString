@@ -7,7 +7,7 @@
 import CommonMark
 import Foundation
 
-public enum CommonMarkComponent: Equatable {
+public enum CommonMarkComponent: Hashable {
   case string(NSAttributedString)
   case url(URL)
 }
