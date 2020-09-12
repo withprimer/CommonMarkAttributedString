@@ -38,8 +38,23 @@ extension Node: ComponentListConvertible {
         return [.string(htmlString)]
       }
       
-      let attributedString = try container.children.map { try $0.attributedString(attributes: attributes, attachments: [:]) }.joined()
-      return [.string(attributedString)]
+      return try container.children.reduce(into: [CommonMarkComponent]()) { components, node in
+        switch node {
+        case is Image:
+          let imageComps = try node.makeComponents(with: attributes)
+          components.append(contentsOf: imageComps)
+        default:
+          let attributedString = try node.attributedString(attributes: attributes, attachments: [:])
+          switch components.last {
+          case .string(let existingAttributedString)?:
+            components.removeLast()
+            let newString = [existingAttributedString, attributedString].joined()
+            components.append(.string(newString))
+          default:
+            components.append(.string(attributedString))
+          }
+        }
+      }
       
     default:
       let attributedString = try self.attributedString(attributes: attributes, attachments: [:])
