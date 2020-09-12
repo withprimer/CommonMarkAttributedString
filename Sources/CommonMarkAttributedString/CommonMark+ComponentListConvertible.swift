@@ -37,7 +37,9 @@ extension Node: ComponentListConvertible {
         let htmlString = try NSAttributedString(html: html, attributes: attributes) ?? NSAttributedString()
         return [.string(htmlString)]
       }
-      return try container.children.flatMap { try $0.makeComponents(with: attributes) }
+      
+      let attributedString = try container.children.map { try $0.attributedString(attributes: attributes, attachments: [:]) }.joined()
+      return [.string(attributedString)]
       
     default:
       let attributedString = try self.attributedString(attributes: attributes, attachments: [:])
