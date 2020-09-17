@@ -1,7 +1,11 @@
-# CommonMarkAttributedString
+This fork adds two things to the upstream implementation, all expressed in the concept of a `CommonMarkComponent`:
+1. Instead of rendering image `URL`s via `NSTextAttachment`s, it pulls them out into separate components so that consumers can render them as they'd like
+2. It supports [generic extensions](https://github.com/medfreeman/remark-generic-extensions) as described in the linked repostory. In a perfect world, this functionality is not added at this layer and is instead added directly to the underlying parser. That may be a fork of [cmark](https://github.com/commonmark/cmark), or maybe a fork of [cmark-gfm](https://github.com/github/cmark-gfm) that has an extension API.
 
-![CI][ci badge]
-[![Documentation][documentation badge]][documentation]
+The rest of the README is preserved as-is from the upstream source, except we've removed the badges for CI & Documentation given that we don't run those actions on our fork.
+___
+
+# CommonMarkAttributedString
 
 **CommonMarkAttributedString** is a Swift package that lets you
 create attributed strings using familiar CommonMark (Markdown) syntax.
