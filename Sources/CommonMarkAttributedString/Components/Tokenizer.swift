@@ -17,6 +17,8 @@ final class Tokenizer {
     }
     let trimmedContent = try extensionInfo.content.trimmedNewLines()
     return Extension(
+      textBefore: "",
+      textAfter: "",
       type: .block,
       name: extensionInfo.name,
       content: trimmedContent,
@@ -29,6 +31,8 @@ final class Tokenizer {
       return nil
     }
     return Extension(
+      textBefore: "",
+      textAfter: "",
       type: .inline,
       name: extensionInfo.name,
       content: extensionInfo.content,

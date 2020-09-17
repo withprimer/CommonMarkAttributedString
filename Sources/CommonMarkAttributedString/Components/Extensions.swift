@@ -13,6 +13,8 @@ public enum ExtensionType: Hashable {
 }
 
 public struct Extension: Hashable {
+  public let textBefore: String
+  public let textAfter: String
   public let type: ExtensionType
   public let name: String
   public let content: String

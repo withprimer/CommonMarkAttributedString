@@ -18,7 +18,6 @@ import Foundation
 enum RegularExpression: String {
   case inlineExtension = #"!(\w+)(?:\[([^\]]*)\])?(?:\(([^)]*)\))?(?:\{([^}]*)\})?"#
   case blockExtension = #"^(\w+):(?:(?:[ \t]+)([^\f\n\r\v]*))?(?:[\f\n\r\v]+):::(.*?):::(?:(?:[\f\n\r\v]+)(?:\{([^}]*)\}))?"#
-//  case blockExtension = #"^(\w+):(?:(?:[ \t]+)([^\f\n\r\v]*))?(?:[\f\n\r\v]+):::(.*?):::(?:(?:[\f\n\r\v]+)(?:\{([^}]*)\}))?"#
   
   case keyValueQuotedProperties = #"(?:\t )*([^\t />"'=]+)=(?:"([^"]+)")"#
   case keyValueProperties = #"(?:\t )*([^\t />"'=]+)=([^\t />"'=]+)"#

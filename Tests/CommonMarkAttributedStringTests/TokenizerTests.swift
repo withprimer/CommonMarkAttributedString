@@ -23,6 +23,8 @@ final class TokenizerTests: XCTestCase {
     
     let actual = try Tokenizer().inlineExtension(from: fancyLink)
     let expected = Extension(
+      textBefore: "",
+      textAfter: "",
       type: .inline,
       name: "FancyLink",
       content: "The Red List",
@@ -41,6 +43,8 @@ final class TokenizerTests: XCTestCase {
 
     let actual = try Tokenizer().blockExtension(from: block)
     let expected = Extension(
+      textBefore: "",
+      textAfter: "",
       type: .block,
       name: "Extension",
       content: "[Content]",

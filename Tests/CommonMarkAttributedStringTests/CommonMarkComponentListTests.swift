@@ -134,4 +134,78 @@ final class CommonMarkComponentListTests: XCTestCase {
       XCTFail("Expected .extension with a type of .block to be the first component in \(components)")
     }
   }
+  
+  func testHeaderAndLinkComponents() throws {
+    let commonmark = """
+    # Header
+    !FancyLink[Wikipedia is cool](Societal Collapse){href=\"https://en.wikipedia.org/wiki/Societal_collapse\"}
+    """
+
+    #if canImport(UIKit)
+    let attributes: [NSAttributedString.Key: Any] = [
+        .font: UIFont.systemFont(ofSize: 24.0),
+        .foregroundColor: UIColor.systemBlue
+    ]
+    #elseif canImport(AppKit)
+    let attributes: [NSAttributedString.Key: Any] = [
+        .font: NSFont.systemFont(ofSize: 24.0),
+        .foregroundColor: NSColor.systemBlue
+    ]
+    #endif
+
+    let components = try CommonMarkComponentList(
+      commonmark: commonmark,
+      attributes: attributes).components
+
+    XCTAssertEqual(components.count, 2)
+    
+    if case .simple(.string(let str)) = components.first {
+      XCTAssertEqual(str.string, "Header")
+    } else {
+      XCTFail("Expected .simple(.string)) to be the first component")
+    }
+    
+    if case .extension(let ext) = components.dropFirst().first {
+      XCTAssertEqual(ext.type, .inline)
+    } else {
+      XCTFail("Expected .extension with a type of .block to be the second component in \(components)")
+    }
+  }
+  
+  func testTextAndLinkComponents() throws {
+    let commonmark = """
+    Some text
+    !FancyLink[Wikipedia is cool](Societal Collapse){href=\"https://en.wikipedia.org/wiki/Societal_collapse\"}
+    """
+
+    #if canImport(UIKit)
+    let attributes: [NSAttributedString.Key: Any] = [
+        .font: UIFont.systemFont(ofSize: 24.0),
+        .foregroundColor: UIColor.systemBlue
+    ]
+    #elseif canImport(AppKit)
+    let attributes: [NSAttributedString.Key: Any] = [
+        .font: NSFont.systemFont(ofSize: 24.0),
+        .foregroundColor: NSColor.systemBlue
+    ]
+    #endif
+
+    let components = try CommonMarkComponentList(
+      commonmark: commonmark,
+      attributes: attributes).components
+
+    XCTAssertEqual(components.count, 2)
+    
+    if case .simple(.string(let str)) = components.first {
+      XCTAssertEqual(str.string, "Some text\n")
+    } else {
+      XCTFail("Expected .simple(.string)) to be the first component")
+    }
+    
+    if case .extension(let ext) = components.dropFirst().first {
+      XCTAssertEqual(ext.type, .inline)
+    } else {
+      XCTFail("Expected .extension with a type of .block to be the second component in \(components)")
+    }
+  }
 }
