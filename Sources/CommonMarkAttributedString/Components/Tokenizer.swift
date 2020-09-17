@@ -71,7 +71,6 @@ final class Tokenizer {
       let nameRange = Range(match.range(at: 3), in: commonmark),
       let secondRange = Range(match.range(at: 4), in: commonmark),
       let thirdRange = Range(match.range(at: 5), in: commonmark),
-      let propertiesRange = Range(match.range(at: 6), in: commonmark),
       let textAfterRange = Range(match.range(at: 7), in: commonmark)
     else {
       return nil
@@ -81,10 +80,17 @@ final class Tokenizer {
     let name = commonmark[nameRange]
     let content = isBlock ? commonmark[thirdRange] : commonmark[secondRange]
     let argument = isBlock ? commonmark[secondRange] : commonmark[thirdRange]
-    let rawProperties = commonmark[propertiesRange]
     let textAfter = commonmark[textAfterRange]
+    let properties: [String: String]
     
-    let properties = try extractProperties(from: String(rawProperties))
+    let propertiesRange = match.range(at: 6)
+    if propertiesRange.location != NSNotFound, let propertiesStrRange = Range(propertiesRange, in: commonmark) {
+      let rawProperties = commonmark[propertiesStrRange]
+      properties = try extractProperties(from: String(rawProperties))
+    } else {
+      properties = [:]
+    }
+    
     return ExtensionInfo(
       textBefore: String(textBefore),
       textAfter: String(textAfter),
