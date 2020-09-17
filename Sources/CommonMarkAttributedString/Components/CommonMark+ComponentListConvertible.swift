@@ -63,6 +63,14 @@ extension Node: ComponentListConvertible {
     attributes: [NSAttributedString.Key: Any]) throws -> [CommonMarkComponent]
   {
     if let blockExtension = try tokenizer.blockExtension(from: container.description.unescapedForCommonmark()) {
+      let textBeforeComponent: CommonMarkComponent?
+      if !blockExtension.textBefore.isEmpty {
+        let string = try Document(blockExtension.textBefore).attributedString(attributes: attributes, attachments: [:])
+        textBeforeComponent = .simple(.string(string))
+      } else {
+        textBeforeComponent = nil
+      }
+      
       let contentComponents = try Document(blockExtension.content).makeSimpleComponents(attributes: attributes)
       let component = ExtensionComponent(
         type: .block,
@@ -70,10 +78,31 @@ extension Node: ComponentListConvertible {
         components: contentComponents,
         argument: blockExtension.argument,
         properties: blockExtension.properties)
-      return [.extension(component)]
+      
+      let textAfterComponent: CommonMarkComponent?
+      if !blockExtension.textAfter.isEmpty {
+        let string = try Document(blockExtension.textAfter).attributedString(attributes: attributes, attachments: [:])
+        textAfterComponent = .simple(.string(string))
+      } else {
+        textAfterComponent = nil
+      }
+      
+      return [
+        textBeforeComponent,
+        .extension(component),
+        textAfterComponent,
+      ].compactMap { $0 }
     }
     
     if let inlineExtension = try tokenizer.inlineExtension(from: container.description.unescapedForCommonmark()) {
+      let textBeforeComponent: CommonMarkComponent?
+      if !inlineExtension.textBefore.isEmpty {
+        let string = try Document(inlineExtension.textBefore).attributedString(attributes: attributes, attachments: [:])
+        textBeforeComponent = .simple(.string(string))
+      } else {
+        textBeforeComponent = nil
+      }
+      
       let contentComponents = try Document(inlineExtension.content).makeSimpleComponents(attributes: attributes)
       let component = ExtensionComponent(
         type: .inline,
@@ -81,7 +110,20 @@ extension Node: ComponentListConvertible {
         components: contentComponents,
         argument: inlineExtension.argument,
         properties: inlineExtension.properties)
-      return [.extension(component)]
+      
+      let textAfterComponent: CommonMarkComponent?
+      if !inlineExtension.textAfter.isEmpty {
+        let string = try Document(inlineExtension.textAfter).attributedString(attributes: attributes, attachments: [:])
+        textAfterComponent = .simple(.string(string))
+      } else {
+        textAfterComponent = nil
+      }
+      
+      return [
+        textBeforeComponent,
+        .extension(component),
+        textAfterComponent,
+      ].compactMap { $0 }
     }
     
     return try container.children.reduce(into: [CommonMarkComponent]()) { components, node in

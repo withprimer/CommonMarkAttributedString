@@ -18,7 +18,7 @@ import AppKit
 @testable import CommonMarkAttributedString
 
 final class CommonMarkComponentListTests: XCTestCase {
-  
+    
   func testSingleStringComponent() throws {
     let commonmark = "A *bold* way to add __emphasis__ to your `code`"
     
@@ -171,11 +171,13 @@ final class CommonMarkComponentListTests: XCTestCase {
       XCTFail("Expected .extension with a type of .block to be the second component in \(components)")
     }
   }
-  
-  func testTextAndLinkComponents() throws {
+    
+  func testTextAndInlineExtensionComponents() throws {
     let commonmark = """
-    Some text
+    Some text beforehand!
     !FancyLink[Wikipedia is cool](Societal Collapse){href=\"https://en.wikipedia.org/wiki/Societal_collapse\"}
+    Testing test **test**
+    ### HELLO
     """
 
     #if canImport(UIKit)
@@ -194,18 +196,86 @@ final class CommonMarkComponentListTests: XCTestCase {
       commonmark: commonmark,
       attributes: attributes).components
 
-    XCTAssertEqual(components.count, 2)
-    
+    XCTAssertEqual(components.count, 4)
+
     if case .simple(.string(let str)) = components.first {
-      XCTAssertEqual(str.string, "Some text\n")
+      XCTAssertEqual(str.string, "Some text beforehand!")
     } else {
       XCTFail("Expected .simple(.string)) to be the first component")
     }
-    
+
     if case .extension(let ext) = components.dropFirst().first {
       XCTAssertEqual(ext.type, .inline)
     } else {
+      XCTFail("Expected .extension with a type of .inline to be the second component in \(components)")
+    }
+    
+    if case .simple(.string(let str)) = components.dropFirst(2).first {
+      XCTAssertEqual(str.string, "Testing test test")
+    } else {
+      XCTFail("Expected .simple(.string)) to be the third component")
+    }
+    
+    if case .simple(.string(let str)) = components.dropFirst(3).first {
+      XCTAssertEqual(str.string, "HELLO")
+    } else {
+      XCTFail("Expected .simple(.string)) to be the fourth component")
+    }
+  }
+  
+  func testTextAndBlockExtensionComponents() throws {
+    let commonmark = """
+    Testing test **test**
+    Some text beforehand!
+    Extension: Argument
+    :::
+    [Content]
+    :::
+    {href=\"https://www.withprimer.com\" bar=foo hellooo}
+    And some text after!
+    ### HELLO WORLD BIG HEADER
+    """
+
+    #if canImport(UIKit)
+    let attributes: [NSAttributedString.Key: Any] = [
+        .font: UIFont.systemFont(ofSize: 24.0),
+        .foregroundColor: UIColor.systemBlue
+    ]
+    #elseif canImport(AppKit)
+    let attributes: [NSAttributedString.Key: Any] = [
+        .font: NSFont.systemFont(ofSize: 24.0),
+        .foregroundColor: NSColor.systemBlue
+    ]
+    #endif
+
+    let components = try CommonMarkComponentList(
+      commonmark: commonmark,
+      attributes: attributes).components
+
+    XCTAssertEqual(components.count, 4)
+
+    if case .simple(.string(let str)) = components.first {
+      XCTAssertEqual(str.string, "Testing test test Some text beforehand!")
+    } else {
+      XCTFail("Expected .simple(.string)) to be the first component")
+    }
+
+    if case .extension(let ext) = components.dropFirst().first {
+      XCTAssertEqual(ext.type, .block)
+    } else {
       XCTFail("Expected .extension with a type of .block to be the second component in \(components)")
+    }
+    
+    if case .simple(.string(let str)) = components.dropFirst(2).first {
+      XCTAssertEqual(str.string, "And some text after!")
+    } else {
+      XCTFail("Expected .simple(.string)) to be the third component")
+    }
+    
+    if case .simple(.string(let str)) = components.dropFirst(3).first {
+      XCTAssertEqual(str.string, "HELLO WORLD BIG HEADER")
+    } else {
+      XCTFail("Expected .simple(.string)) to be the fourth component")
     }
   }
 }

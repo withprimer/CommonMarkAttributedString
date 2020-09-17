@@ -12,13 +12,15 @@ final class Tokenizer {
   // MARK: Internal
   
   func blockExtension(from commonmark: String) throws -> Extension? {
-    guard let extensionInfo = try extractExtensionInfo(with: .blockExtension, from: commonmark, isBlock: true) else {
+    let regularExpression = try RegularExpression.nsRegularExpression(RegularExpression.blockExtensionInText)
+    guard let extensionInfo = try extractExtensionInfo(with: regularExpression, from: commonmark, isBlock: true) else {
       return nil
     }
+    
     let trimmedContent = try extensionInfo.content.trimmedNewLines()
     return Extension(
-      textBefore: "",
-      textAfter: "",
+      textBefore: extensionInfo.textBefore,
+      textAfter: extensionInfo.textAfter,
       type: .block,
       name: extensionInfo.name,
       content: trimmedContent,
@@ -27,12 +29,14 @@ final class Tokenizer {
   }
   
   func inlineExtension(from commonmark: String) throws -> Extension? {
-    guard let extensionInfo = try extractExtensionInfo(with: .inlineExtension, from: commonmark, isBlock: false) else {
+    let regularExpression = try RegularExpression.nsRegularExpression(RegularExpression.inlineExtensionInText)
+    guard let extensionInfo = try extractExtensionInfo(with: regularExpression, from: commonmark, isBlock: false) else {
       return nil
     }
+    
     return Extension(
-      textBefore: "",
-      textAfter: "",
+      textBefore: extensionInfo.textBefore,
+      textAfter: extensionInfo.textAfter,
       type: .inline,
       name: extensionInfo.name,
       content: extensionInfo.content,
@@ -43,6 +47,8 @@ final class Tokenizer {
   // MARK: Private
   
   private struct ExtensionInfo {
+    let textBefore: String
+    let textAfter: String
     let name: String
     let content: String
     let argument: String
@@ -50,32 +56,38 @@ final class Tokenizer {
   }
   
   private func extractExtensionInfo(
-    with regex: RegularExpression,
+    with regex: NSRegularExpression,
     from commonmark: String,
     isBlock: Bool) throws -> ExtensionInfo?
   {
     let range = commonmark.utf16Range
-    guard let match = try regex.nsRegularExpression().firstMatch(in: commonmark, options: [], range: range) else {
+    guard let match = regex.firstMatch(in: commonmark, options: [], range: range) else {
       return nil
     }
     
     guard
-      match.numberOfRanges == 5,
-      let nameRange = Range(match.range(at: 1), in: commonmark),
-      let secondRange = Range(match.range(at: 2), in: commonmark),
-      let thirdRange = Range(match.range(at: 3), in: commonmark),
-      let propertiesRange = Range(match.range(at: 4), in: commonmark)
+      match.numberOfRanges == 8,
+      let textBeforeRange = Range(match.range(at: 1), in: commonmark),
+      let nameRange = Range(match.range(at: 3), in: commonmark),
+      let secondRange = Range(match.range(at: 4), in: commonmark),
+      let thirdRange = Range(match.range(at: 5), in: commonmark),
+      let propertiesRange = Range(match.range(at: 6), in: commonmark),
+      let textAfterRange = Range(match.range(at: 7), in: commonmark)
     else {
       return nil
     }
 
+    let textBefore = commonmark[textBeforeRange]
     let name = commonmark[nameRange]
     let content = isBlock ? commonmark[thirdRange] : commonmark[secondRange]
     let argument = isBlock ? commonmark[secondRange] : commonmark[thirdRange]
     let rawProperties = commonmark[propertiesRange]
-    let properties = try extractProperties(from: String(rawProperties))
+    let textAfter = commonmark[textAfterRange]
     
+    let properties = try extractProperties(from: String(rawProperties))
     return ExtensionInfo(
+      textBefore: String(textBefore),
+      textAfter: String(textAfter),
       name: String(name),
       content: String(content),
       argument: String(argument),
@@ -142,19 +154,19 @@ final class Tokenizer {
     
     // MARK: Regex processing
     
-    let quotedKeyValuePropertiesRegex = try RegularExpression.keyValueQuotedProperties.nsRegularExpression()
+    let quotedKeyValuePropertiesRegex = try RegularExpression.nsRegularExpression(RegularExpression.keyValueQuotedProperties)
     quotedKeyValuePropertiesRegex.enumerateAndRemove(in: mutableRawString, options: []) { match, flags, stop in
       let newProperties = processKeyValueMatch(match, flags: flags, stop: stop)
       properties.merge(newProperties, uniquingKeysWith: { first, _ in first })
     }
     
-    let keyValuePropertiesRegex = try RegularExpression.keyValueProperties.nsRegularExpression()
+    let keyValuePropertiesRegex = try RegularExpression.nsRegularExpression(RegularExpression.keyValueProperties)
     keyValuePropertiesRegex.enumerateAndRemove(in: mutableRawString, options: []) { match, flags, stop in
       let newProperties = processKeyValueMatch(match, flags: flags, stop: stop)
       properties.merge(newProperties, uniquingKeysWith: { first, _ in first })
     }
     
-    let lonePropertiesRegex = try RegularExpression.loneProperties.nsRegularExpression()
+    let lonePropertiesRegex = try RegularExpression.nsRegularExpression(RegularExpression.loneProperties)
     lonePropertiesRegex.enumerateAndRemove(in: mutableRawString, options: []) { match, flags, stop in
       let newProperties = processLonePropertyMatch(match, flags: flags, stop: stop)
       properties.merge(newProperties, uniquingKeysWith: { first, _ in first })
