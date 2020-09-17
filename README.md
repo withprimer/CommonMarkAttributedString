@@ -2,10 +2,12 @@ This fork adds two things to the upstream implementation, all expressed in the c
 1. Instead of rendering image `URL`s via `NSTextAttachment`s, it pulls them out into separate components so that consumers can render them as they'd like
 2. It supports [generic extensions](https://github.com/medfreeman/remark-generic-extensions) as described in the linked repostory. In a perfect world, this functionality is not added at this layer and is instead added directly to the underlying parser. That may be a fork of [cmark](https://github.com/commonmark/cmark), or maybe a fork of [cmark-gfm](https://github.com/github/cmark-gfm) that has an extension API.
 
-The rest of the README is preserved as-is from the upstream source, except we've removed the badges for CI & Documentation given that we don't run those actions on our fork.
+The rest of the README is preserved as-is from the upstream source, except we've removed the badge Documentation given that we don't run that action on our fork.
 ___
 
 # CommonMarkAttributedString
+
+![CI][ci badge]
 
 **CommonMarkAttributedString** is a Swift package that lets you
 create attributed strings using familiar CommonMark (Markdown) syntax.
@@ -99,7 +101,7 @@ it falls back on `NSAttributedString`'s built-in HTML initializer.
 
 CommonMarkAttributedString renders bulleted and ordered lists
 using conventional indentation and markers ---
-disc (•), circle(◦), and square (■) 
+disc (•), circle(◦), and square (■)
 for unordered lists
 and
 decimal numerals (1.), lowercase roman numerals (i.), and lowercase letters (a.)
