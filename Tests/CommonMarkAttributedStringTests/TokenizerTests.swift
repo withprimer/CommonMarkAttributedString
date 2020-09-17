@@ -229,4 +229,20 @@ final class TokenizerTests: XCTestCase {
 
     XCTAssertEqual(actual, expected)
   }
+  
+  func testBlockWithNoPropertiesAndTextAfter() throws {
+    let block = "FamilyCallout: Learning Connections\n:::\nIn this project, learners will practice problem solving skills, and gain exposure to physical science concepts. They will:\n- Analyze and test different materials to determine which materials have the properties that are best suited for an intended purpose\n- Conduct an investigation to compare the effects of different forces on the motion of an object\n- Determine if a design solution works as intended to change the speed or direction of an object with a push or pull\n- Practice resourcefulness, by finding ways to use the supplies they have available to solve a given problem\n:::\n\nFor this project you will invent a device that keeps an egg from cracking when it is dropped from 7 feet high (or higher!).  \n\nHere are the rules you must follow:\n\n- Your device must be dropped with the egg; you can't build anything on the ground for the egg to land on.\n\n- The floor must be hard, like in a kitchen or outside on a sidewalk or thin grass. No dropping it on carpet!\n\n- You must prevent the egg from making a mess if your invention fails. Lay down some trash bags where you drop it to catch any mess you might make.\n\n**To get started, explore your home and look for recyclables or other materials you could use for building your device.** \n\n"
+    
+    let actual = try Tokenizer().blockExtension(from: block)
+    let expected = Extension(
+      textBefore: "",
+      textAfter: "\n\nFor this project you will invent a device that keeps an egg from cracking when it is dropped from 7 feet high (or higher!).  \n\nHere are the rules you must follow:\n\n- Your device must be dropped with the egg; you can't build anything on the ground for the egg to land on.\n\n- The floor must be hard, like in a kitchen or outside on a sidewalk or thin grass. No dropping it on carpet!\n\n- You must prevent the egg from making a mess if your invention fails. Lay down some trash bags where you drop it to catch any mess you might make.\n\n**To get started, explore your home and look for recyclables or other materials you could use for building your device.** \n",
+      type: .block,
+      name: "FamilyCallout",
+      content: "In this project, learners will practice problem solving skills, and gain exposure to physical science concepts. They will:\n- Analyze and test different materials to determine which materials have the properties that are best suited for an intended purpose\n- Conduct an investigation to compare the effects of different forces on the motion of an object\n- Determine if a design solution works as intended to change the speed or direction of an object with a push or pull\n- Practice resourcefulness, by finding ways to use the supplies they have available to solve a given problem",
+      argument: "Learning Connections",
+      properties: [:])
+
+    XCTAssertEqual(actual, expected)
+  }
 }

@@ -15,7 +15,7 @@ public enum CommonMarkComponent: Hashable {
 public struct ExtensionComponent: Hashable {
   public let type: ExtensionType
   public let name: String
-  public let components: [SimpleCommonMarkComponent]
+  public let components: [CommonMarkComponent]
   public let argument: String
   public let properties: [String: String]
 }

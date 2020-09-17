@@ -25,6 +25,18 @@ extension Node: ComponentListConvertible {
         let htmlString = try NSAttributedString(html: html, attributes: attributes) ?? NSAttributedString()
         return [.simple(.string(htmlString))]
       }
+      
+      let blockExtensionComponents = try parseExtension(
+        str: container.description.unescapedForCommonmark(),
+        attributes: attributes,
+        tokenizer: tokenizer,
+        type: .block,
+        with: tokenizer.blockExtension(from:))
+      
+      if !blockExtensionComponents.isEmpty {
+        return blockExtensionComponents
+      }
+      
       return try container.children.flatMap { try $0.makeComponents(with: tokenizer, attributes: attributes) }
       
     case let container as ContainerOfInlineElements:
@@ -33,7 +45,11 @@ extension Node: ComponentListConvertible {
         let htmlString = try NSAttributedString(html: html, attributes: attributes) ?? NSAttributedString()
         return [.simple(.string(htmlString))]
       }
-      return try foldedInlineComponents(for: container, tokenizer: tokenizer, attributes: attributes)
+      return try foldedComponents(
+        for: container.description.unescapedForCommonmark(),
+        children: container.children,
+        tokenizer: tokenizer,
+        attributes: attributes)
       
     default:
       let simpleComponents = try makeSimpleComponents(attributes: attributes)
@@ -56,77 +72,36 @@ extension Node: ComponentListConvertible {
   
   // MARK: Private
   
-  /// "Folds" the children elements into their `NSAttributedString`s when applicable, breaking them apart when images or extensions are encountered
-  private func foldedInlineComponents(
-    for container: ContainerOfInlineElements,
+  /// "Folds" the child elements into their `NSAttributedString`s when applicable, breaking them apart when images or extensions are encountered
+  private func foldedComponents(
+    for containerString: String,
+    children: [Node],
     tokenizer: Tokenizer,
     attributes: [NSAttributedString.Key: Any]) throws -> [CommonMarkComponent]
   {
-    if let blockExtension = try tokenizer.blockExtension(from: container.description.unescapedForCommonmark()) {
-      let textBeforeComponent: CommonMarkComponent?
-      if !blockExtension.textBefore.isEmpty {
-        let string = try Document(blockExtension.textBefore).attributedString(attributes: attributes, attachments: [:])
-        textBeforeComponent = .simple(.string(string))
-      } else {
-        textBeforeComponent = nil
-      }
-      
-      let contentComponents = try Document(blockExtension.content).makeSimpleComponents(attributes: attributes)
-      let component = ExtensionComponent(
-        type: .block,
-        name: blockExtension.name,
-        components: contentComponents,
-        argument: blockExtension.argument,
-        properties: blockExtension.properties)
-      
-      let textAfterComponent: CommonMarkComponent?
-      if !blockExtension.textAfter.isEmpty {
-        let string = try Document(blockExtension.textAfter).attributedString(attributes: attributes, attachments: [:])
-        textAfterComponent = .simple(.string(string))
-      } else {
-        textAfterComponent = nil
-      }
-      
-      return [
-        textBeforeComponent,
-        .extension(component),
-        textAfterComponent,
-      ].compactMap { $0 }
+    let blockExtensionComponents = try parseExtension(
+      str: containerString,
+      attributes: attributes,
+      tokenizer: tokenizer,
+      type: .block,
+      with: tokenizer.blockExtension(from:))
+    
+    if !blockExtensionComponents.isEmpty {
+      return blockExtensionComponents
     }
     
-    if let inlineExtension = try tokenizer.inlineExtension(from: container.description.unescapedForCommonmark()) {
-      let textBeforeComponent: CommonMarkComponent?
-      if !inlineExtension.textBefore.isEmpty {
-        let string = try Document(inlineExtension.textBefore).attributedString(attributes: attributes, attachments: [:])
-        textBeforeComponent = .simple(.string(string))
-      } else {
-        textBeforeComponent = nil
-      }
-      
-      let contentComponents = try Document(inlineExtension.content).makeSimpleComponents(attributes: attributes)
-      let component = ExtensionComponent(
-        type: .inline,
-        name: inlineExtension.name,
-        components: contentComponents,
-        argument: inlineExtension.argument,
-        properties: inlineExtension.properties)
-      
-      let textAfterComponent: CommonMarkComponent?
-      if !inlineExtension.textAfter.isEmpty {
-        let string = try Document(inlineExtension.textAfter).attributedString(attributes: attributes, attachments: [:])
-        textAfterComponent = .simple(.string(string))
-      } else {
-        textAfterComponent = nil
-      }
-      
-      return [
-        textBeforeComponent,
-        .extension(component),
-        textAfterComponent,
-      ].compactMap { $0 }
+    let inlineExtensionComponents = try parseExtension(
+      str: containerString,
+      attributes: attributes,
+      tokenizer: tokenizer,
+      type: .inline,
+      with: tokenizer.inlineExtension(from:))
+    
+    if !inlineExtensionComponents.isEmpty {
+      return inlineExtensionComponents
     }
     
-    return try container.children.reduce(into: [CommonMarkComponent]()) { components, node in
+    return try children.reduce(into: [CommonMarkComponent]()) { components, node in
       switch node {
       case is Image:
         let imageComps = try node.makeComponents(with: tokenizer, attributes: attributes)
@@ -143,5 +118,43 @@ extension Node: ComponentListConvertible {
         }
       }
     }
+  }
+  
+  private func parseExtension(
+    str: String,
+    attributes: [NSAttributedString.Key: Any],
+    tokenizer: Tokenizer,
+    type: ExtensionType,
+    with parse: (String) throws -> Extension?) throws -> [CommonMarkComponent]
+  {
+    guard let extensionInfo = try parse(str) else {
+      return []
+    }
+    
+    let textBeforeComponents: [CommonMarkComponent]
+    if !extensionInfo.textBefore.isEmpty {
+      let components = try Document(extensionInfo.textBefore).makeComponents(with: tokenizer, attributes: attributes)
+      textBeforeComponents = components
+    } else {
+      textBeforeComponents = []
+    }
+    
+    let contentComponents = try Document(extensionInfo.content).makeComponents(with: tokenizer, attributes: attributes)
+    let component = ExtensionComponent(
+      type: type,
+      name: extensionInfo.name,
+      components: contentComponents,
+      argument: extensionInfo.argument,
+      properties: extensionInfo.properties)
+    
+    let textAfterComponents: [CommonMarkComponent]
+    if !extensionInfo.textAfter.isEmpty {
+      let components = try Document(extensionInfo.textAfter).makeComponents(with: tokenizer, attributes: attributes)
+      textAfterComponents = components
+    } else {
+      textAfterComponents = []
+    }
+    
+    return textBeforeComponents + [.extension(component)] + textAfterComponents
   }
 }
