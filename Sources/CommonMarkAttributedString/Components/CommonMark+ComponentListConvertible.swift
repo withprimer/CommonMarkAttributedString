@@ -56,7 +56,7 @@ extension Node: ComponentListConvertible {
   
   // MARK: Private
   
-  /// "Folds" the children elements into their `NSAttributedString`s when applicable, breaking them apart when images or inline extensions are encountered
+  /// "Folds" the children elements into their `NSAttributedString`s when applicable, breaking them apart when images or extensions are encountered
   private func foldedInlineComponents(
     for container: ContainerOfInlineElements,
     tokenizer: Tokenizer,

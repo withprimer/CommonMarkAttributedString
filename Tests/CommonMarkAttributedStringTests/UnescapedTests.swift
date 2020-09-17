@@ -17,27 +17,8 @@ import AppKit
 
 @testable import CommonMarkAttributedString
 
-/// All tests here that are testing our own generic extensions are taken from the [official spec](https://spec.commonmark.org/0.29/#backslash-escapes)
+/// All tests here are taken from the [official spec](https://spec.commonmark.org/0.29/#backslash-escapes)
 final class UnescapedTests: XCTestCase {
-  
-  func test_fancyLink() throws {
-    let rawCommonmark = #"!FancyLink[Wikipedia is cool](Societal Collapse){href="https://en.wikipedia.org/wiki/Societal_collapse"}"#
-    let document = try Document(rawCommonmark)
-    let commonmark = try document.render(format: .commonmark).unescapedForCommonmark()
-    XCTAssertEqual(commonmark, "!FancyLink[Wikipedia is cool](Societal Collapse){href=\"https://en.wikipedia.org/wiki/Societal_collapse\"}\n")
-  }
-  
-//  func test_callout() throws {
-//
-//  }
-
-//  func test_familyCallout() throws {
-//
-//  }
-
-//  func test_upload() throws {
-//
-//  }
   
   // 298: Any ASCII punctuation character may be backslash-escaped
   func test_example298() throws {
