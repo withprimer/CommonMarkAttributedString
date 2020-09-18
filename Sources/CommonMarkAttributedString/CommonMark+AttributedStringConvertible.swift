@@ -115,7 +115,11 @@ extension Heading {
 }
 
 extension List {
-    fileprivate var nestingLevel: Int {
+    func delimiter(at position: Int) -> String {
+      kind == .ordered ? "\(position + 1)." : "•"
+    }
+  
+    var nestingLevel: Int {
         sequence(first: self) { $0.parent }.map { ($0 is List) ? 1 : 0}.reduce(0, +)
     }
 
@@ -132,7 +136,7 @@ extension List.Item {
     // TODO: Represent lists with NSTextList on macOS
     fileprivate func attributedString(in list: List, at position: Int, attributes: [NSAttributedString.Key: Any], attachments: [String: NSTextAttachment]) throws -> NSAttributedString {
 
-        var delimiter: String = list.kind == .ordered ? "\(position + 1)." : "•"
+        var delimiter: String = list.delimiter(at: position)
         #if os(macOS) && canImport(AppKit)
         if #available(OSX 10.13, *) {
             let format: NSTextList.MarkerFormat
