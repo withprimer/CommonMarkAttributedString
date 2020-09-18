@@ -407,4 +407,48 @@ final class CommonMarkComponentListTests: XCTestCase {
       XCTFail("Expected .simple(.url) to be the second component in \(components)")
     }
   }
+  
+  func testListItemImageOnly() throws {
+    let commonmark = """
+    1. ![](https://res.cloudinary.com/primer-cloudinary/image/upload/v1599788011/upg8sag6kgtpt8vqos1s.png)
+    1. Roll it around your straw
+    """
+
+    #if canImport(UIKit)
+    let attributes: [NSAttributedString.Key: Any] = [
+        .font: UIFont.systemFont(ofSize: 24.0),
+        .foregroundColor: UIColor.systemBlue
+    ]
+    #elseif canImport(AppKit)
+    let attributes: [NSAttributedString.Key: Any] = [
+        .font: NSFont.systemFont(ofSize: 24.0),
+        .foregroundColor: NSColor.systemBlue
+    ]
+    #endif
+
+    let components = try CommonMarkComponentList(
+      commonmark: commonmark,
+      attributes: attributes).components
+
+    XCTAssertEqual(components.count, 3)
+
+    if case .simple(.string(let str)) = components.first {
+      XCTAssertEqual(str.string, "\t1. ")
+    } else {
+      XCTFail("Expected .simple(.string)) to be the first component")
+    }
+
+    if case .simple(.url(let url)) = components.dropFirst().first {
+      XCTAssertEqual(url.absoluteString, "https://res.cloudinary.com/primer-cloudinary/image/upload/v1599788011/upg8sag6kgtpt8vqos1s.png")
+    } else {
+      XCTFail("Expected .simple(.url) to be the second component in \(components)")
+    }
+
+    if case .simple(.string(let str)) = components.dropFirst(2).first {
+      XCTAssertEqual(str.string, "\t2. Roll it around your straw")
+    } else {
+      XCTFail("Expected .simple(.string)) to be the third component")
+    }
+  }
+
 }
