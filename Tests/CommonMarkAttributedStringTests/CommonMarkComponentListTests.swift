@@ -298,11 +298,11 @@ final class CommonMarkComponentListTests: XCTestCase {
       commonmark: commonmark,
       attributes: attributes).components
 
-    XCTAssertEqual(components.count, 5)
+    XCTAssertEqual(components.count, 7)
     
     if case .extension(let ext) = components.first {
       XCTAssertEqual(ext.type, .block)
-      XCTAssertEqual(ext.components.count, 2)
+      XCTAssertEqual(ext.components.count, 5)
     } else {
       XCTFail("Expected .extension with a type of .block to be the first component in \(components)")
     }
@@ -317,6 +317,94 @@ final class CommonMarkComponentListTests: XCTestCase {
       XCTAssertEqual(str.string, "Here are the rules you must follow:")
     } else {
       XCTFail("Expected .simple(.string)) to be the third component")
+    }
+  }
+  
+  func testPreserveStandardList() throws {
+    let commonmark = """
+    1. Cut a piece of paper into a 1.5\" x 11\" strip.
+    1. Roll it around your straw and tape it in three places to hold it's shape. The straw shown here is a paper straw made using the instructions in a prior step of this project.
+    """
+
+    #if canImport(UIKit)
+    let attributes: [NSAttributedString.Key: Any] = [
+        .font: UIFont.systemFont(ofSize: 24.0),
+        .foregroundColor: UIColor.systemBlue
+    ]
+    #elseif canImport(AppKit)
+    let attributes: [NSAttributedString.Key: Any] = [
+        .font: NSFont.systemFont(ofSize: 24.0),
+        .foregroundColor: NSColor.systemBlue
+    ]
+    #endif
+
+    let components = try CommonMarkComponentList(
+      commonmark: commonmark,
+      attributes: attributes).components
+
+    XCTAssertEqual(components.count, 2)
+
+    if case .simple(.string(let str)) = components.first {
+      XCTAssertEqual(str.string, "\t1. Cut a piece of paper into a 1.5\" x 11\" strip.")
+    } else {
+      XCTFail("Expected .simple(.string)) to be the first component")
+    }
+    
+    if case .simple(.string(let str)) = components.dropFirst().first {
+      XCTAssertEqual(str.string, "\t2. Roll it around your straw and tape it in three places to hold it's shape. The straw shown here is a paper straw made using the instructions in a prior step of this project.")
+    } else {
+      XCTFail("Expected .simple(.string)) to be the first component")
+    }
+  }
+  
+  func testListItemWithImage() throws {
+    let commonmark = """
+    1. Cut a piece of paper into a 1.5\" x 11\" strip.
+    ![](https://res.cloudinary.com/primer-cloudinary/image/upload/v1599788011/upg8sag6kgtpt8vqos1s.png)
+    1. Roll it around your straw and tape it in three places to hold it's shape. The straw shown here is a paper straw made using the instructions in a prior step of this project.
+    ![](https://res.cloudinary.com/primer-cloudinary/image/upload/v1599788024/wbgdryijgfagcyqscl2b.png)
+    """
+
+    #if canImport(UIKit)
+    let attributes: [NSAttributedString.Key: Any] = [
+        .font: UIFont.systemFont(ofSize: 24.0),
+        .foregroundColor: UIColor.systemBlue
+    ]
+    #elseif canImport(AppKit)
+    let attributes: [NSAttributedString.Key: Any] = [
+        .font: NSFont.systemFont(ofSize: 24.0),
+        .foregroundColor: NSColor.systemBlue
+    ]
+    #endif
+
+    let components = try CommonMarkComponentList(
+      commonmark: commonmark,
+      attributes: attributes).components
+
+    XCTAssertEqual(components.count, 4)
+
+    if case .simple(.string(let str)) = components.first {
+      XCTAssertEqual(str.string, "\t1. Cut a piece of paper into a 1.5\" x 11\" strip. ")
+    } else {
+      XCTFail("Expected .simple(.string)) to be the first component")
+    }
+
+    if case .simple(.url(let url)) = components.dropFirst().first {
+      XCTAssertEqual(url.absoluteString, "https://res.cloudinary.com/primer-cloudinary/image/upload/v1599788011/upg8sag6kgtpt8vqos1s.png")
+    } else {
+      XCTFail("Expected .simple(.url) to be the second component in \(components)")
+    }
+
+    if case .simple(.string(let str)) = components.dropFirst(2).first {
+      XCTAssertEqual(str.string, "\t2. Roll it around your straw and tape it in three places to hold it's shape. The straw shown here is a paper straw made using the instructions in a prior step of this project. ")
+    } else {
+      XCTFail("Expected .simple(.string)) to be the first component")
+    }
+
+    if case .simple(.url(let url)) = components.dropFirst(3).first {
+      XCTAssertEqual(url.absoluteString, "https://res.cloudinary.com/primer-cloudinary/image/upload/v1599788024/wbgdryijgfagcyqscl2b.png")
+    } else {
+      XCTFail("Expected .simple(.url) to be the second component in \(components)")
     }
   }
 }
