@@ -196,7 +196,7 @@ final class CommonMarkComponentListTests: XCTestCase {
       commonmark: commonmark,
       attributes: attributes).components
 
-    XCTAssertEqual(components.count, 4)
+    XCTAssertEqual(components.count, 3)
 
     if case .simple(.string(let str)) = components.first {
       XCTAssertEqual(str.string, "Some text beforehand!")
@@ -211,15 +211,9 @@ final class CommonMarkComponentListTests: XCTestCase {
     }
     
     if case .simple(.string(let str)) = components.dropFirst(2).first {
-      XCTAssertEqual(str.string, "Testing test test")
+      XCTAssertEqual(str.string, "Testing test test\u{2029}HELLO")
     } else {
       XCTFail("Expected .simple(.string)) to be the third component")
-    }
-    
-    if case .simple(.string(let str)) = components.dropFirst(3).first {
-      XCTAssertEqual(str.string, "HELLO")
-    } else {
-      XCTFail("Expected .simple(.string)) to be the fourth component")
     }
   }
   
@@ -252,7 +246,7 @@ final class CommonMarkComponentListTests: XCTestCase {
       commonmark: commonmark,
       attributes: attributes).components
 
-    XCTAssertEqual(components.count, 4)
+    XCTAssertEqual(components.count, 3)
 
     if case .simple(.string(let str)) = components.first {
       XCTAssertEqual(str.string, "Testing test test Some text beforehand!")
@@ -267,15 +261,9 @@ final class CommonMarkComponentListTests: XCTestCase {
     }
     
     if case .simple(.string(let str)) = components.dropFirst(2).first {
-      XCTAssertEqual(str.string, "And some text after!")
+      XCTAssertEqual(str.string, "And some text after!\u{2029}HELLO WORLD BIG HEADER")
     } else {
       XCTFail("Expected .simple(.string)) to be the third component")
-    }
-    
-    if case .simple(.string(let str)) = components.dropFirst(3).first {
-      XCTAssertEqual(str.string, "HELLO WORLD BIG HEADER")
-    } else {
-      XCTFail("Expected .simple(.string)) to be the fourth component")
     }
   }
   
@@ -298,25 +286,19 @@ final class CommonMarkComponentListTests: XCTestCase {
       commonmark: commonmark,
       attributes: attributes).components
 
-    XCTAssertEqual(components.count, 7)
+    XCTAssertEqual(components.count, 2)
     
     if case .extension(let ext) = components.first {
       XCTAssertEqual(ext.type, .block)
-      XCTAssertEqual(ext.components.count, 5)
+      XCTAssertEqual(ext.components.count, 1)
     } else {
       XCTFail("Expected .extension with a type of .block to be the first component in \(components)")
     }
     
     if case .simple(.string(let str)) = components.dropFirst().first {
-      XCTAssertEqual(str.string, "For this project you will invent a device that keeps an egg from cracking when it is dropped from 7 feet high (or higher!).")
+      XCTAssertEqual(str.string, "For this project you will invent a device that keeps an egg from cracking when it is dropped from 7 feet high (or higher!).\u{2029}Here are the rules you must follow:\u{2029}\t• Your device must be dropped with the egg; you can't build anything on the ground for the egg to land on.\u{2029}\t• The floor must be hard, like in a kitchen or outside on a sidewalk or thin grass. No dropping it on carpet!\u{2029}\t• You must prevent the egg from making a mess if your invention fails. Lay down some trash bags where you drop it to catch any mess you might make.\u{2029}To get started, explore your home and look for recyclables or other materials you could use for building your device.")
     } else {
       XCTFail("Expected .simple(.string)) to be the second component")
-    }
-    
-    if case .simple(.string(let str)) = components.dropFirst(2).first {
-      XCTAssertEqual(str.string, "Here are the rules you must follow:")
-    } else {
-      XCTFail("Expected .simple(.string)) to be the third component")
     }
   }
   
@@ -342,16 +324,10 @@ final class CommonMarkComponentListTests: XCTestCase {
       commonmark: commonmark,
       attributes: attributes).components
 
-    XCTAssertEqual(components.count, 2)
+    XCTAssertEqual(components.count, 1)
 
     if case .simple(.string(let str)) = components.first {
-      XCTAssertEqual(str.string, "\t1. Cut a piece of paper into a 1.5\" x 11\" strip.")
-    } else {
-      XCTFail("Expected .simple(.string)) to be the first component")
-    }
-    
-    if case .simple(.string(let str)) = components.dropFirst().first {
-      XCTAssertEqual(str.string, "\t2. Roll it around your straw and tape it in three places to hold it's shape. The straw shown here is a paper straw made using the instructions in a prior step of this project.")
+      XCTAssertEqual(str.string, "\t1. Cut a piece of paper into a 1.5\" x 11\" strip.\u{2029}\t2. Roll it around your straw and tape it in three places to hold it's shape. The straw shown here is a paper straw made using the instructions in a prior step of this project.")
     } else {
       XCTFail("Expected .simple(.string)) to be the first component")
     }
@@ -451,4 +427,37 @@ final class CommonMarkComponentListTests: XCTestCase {
     }
   }
 
+  func testPreservesNewlinesWithCorrectSeparator() throws {
+    let commonmark = """
+    For this project you will invent a device that keeps an egg from cracking when it is dropped from 7 feet high (or higher!).
+
+    Here are the rules you must follow:
+
+    - Your device must be dropped with the egg; you can\'t build anything on the ground for the egg to land on.
+    
+    - The floor must be hard, like in a kitchen or outside on a sidewalk or thin grass. No dropping it on carpet!
+
+    - You must prevent the egg from making a mess if your invention fails. Lay down some trash bags where you drop it to catch any mess you might make.
+
+    **To get started, explore your home and look for recyclables or other materials you could use for building your device.**
+    """
+    
+    #if canImport(UIKit)
+    let attributes: [NSAttributedString.Key: Any] = [
+        .font: UIFont.systemFont(ofSize: 24.0),
+        .foregroundColor: UIColor.systemBlue
+    ]
+    #elseif canImport(AppKit)
+    let attributes: [NSAttributedString.Key: Any] = [
+        .font: NSFont.systemFont(ofSize: 24.0),
+        .foregroundColor: NSColor.systemBlue
+    ]
+    #endif
+
+    let components = try CommonMarkComponentList(
+      commonmark: commonmark,
+      attributes: attributes).components
+
+    XCTAssertEqual(components.count, 1)
+  }
 }
