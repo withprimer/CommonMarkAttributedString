@@ -24,14 +24,14 @@ extension Node: ComponentListConvertible {
         for: container.description.unescapedForCommonmark(),
         children: container.children,
         tokenizer: tokenizer,
-        attributes: attributes)
+        attributes: attributes).joined(separator: "\u{2029}")
       
     case let list as List:
       return try makeListComponents(
         for: list,
         children: list.children,
         tokenizer: tokenizer,
-        attributes: attributes)
+        attributes: attributes).joined(separator: "\u{2029}")
       
     case let container as ContainerOfInlineElements:
       guard !container.children.contains(where: { $0 is RawHTML }) else {
@@ -43,11 +43,13 @@ extension Node: ComponentListConvertible {
         for: container.description.unescapedForCommonmark(),
         children: container.children,
         tokenizer: tokenizer,
-        attributes: attributes)
+        attributes: attributes).joined()
       
     default:
       let simpleComponents = try makeSimpleComponents(attributes: attributes)
-      return simpleComponents.map { .simple($0) }
+      return simpleComponents
+        .map { .simple($0) }
+        .joined(separator: "\u{2029}")
     }
   }
   
