@@ -460,4 +460,41 @@ final class CommonMarkComponentListTests: XCTestCase {
 
     XCTAssertEqual(components.count, 1)
   }
+  
+  func testHeadingSizeAttributes() throws {
+    let commonmark = """
+    # Header
+    This is some additional text below the header.
+    """
+    
+    #if canImport(UIKit)
+    let attributes: [NSAttributedString.Key: Any] = [
+        .font: UIFont.systemFont(ofSize: 24.0),
+        .foregroundColor: UIColor.systemBlue
+    ]
+    #elseif canImport(AppKit)
+    let attributes: [NSAttributedString.Key: Any] = [
+        .font: NSFont.systemFont(ofSize: 24.0),
+        .foregroundColor: NSColor.systemBlue
+    ]
+    #endif
+    
+    let components = try CommonMarkComponentList(
+      commonmark: commonmark,
+      attributes: attributes).components
+    
+    XCTAssertEqual(components.count, 1)
+    if case .simple(.string(let str)) = components.first {
+      let headerAttributes = str.attributes(at: 0, effectiveRange: nil)
+      #if canImport(UIKit)
+      let headerFont = headerAttributes[.font] as! UIFont
+      XCTAssertEqual(headerFont.pointSize, 48)
+      #elseif canImport(AppKit)
+      let headerFont = headerAttributes[.font] as! NSFont
+      XCTAssertEqual(headerFont.pointSize, 48)
+      #endif
+    } else {
+      XCTFail("Expected .string to be the first component in \(components)")
+    }
+  }
 }

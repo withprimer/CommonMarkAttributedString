@@ -26,6 +26,18 @@ extension Node: ComponentListConvertible {
         tokenizer: tokenizer,
         attributes: attributes).joined(separator: "\u{2029}")
       
+    case let blockQuote as BlockQuote:
+      let str = try blockQuote.attributedString(attributes: attributes, attachments: [:])
+      return [.simple(.string(str))]
+      
+    case let codeBlock as CodeBlock:
+      let str = try codeBlock.attributedString(attributes: attributes, attachments: [:])
+      return [.simple(.string(str))]
+      
+    case let heading as Heading:
+      let str = try heading.attributedString(attributes: attributes, attachments: [:])
+      return [.simple(.string(str))]
+      
     case let list as List:
       return try makeListComponents(
         for: list,
@@ -139,23 +151,23 @@ extension Node: ComponentListConvertible {
       return inlineExtensionComponents
     }
     
-    return try children.reduce(into: [CommonMarkComponent]()) { components, node in
-      switch node {
-      case is Image:
-        let imageComps = try node.makeComponents(with: tokenizer, attributes: attributes)
-        components.append(contentsOf: imageComps)
-      default:
-        let attributedString = try node.attributedString(attributes: attributes, attachments: [:])
-        switch components.last {
-        case .simple(.string(let existingAttributedString))?:
-          components.removeLast()
-          let newString = [existingAttributedString, attributedString].joined()
-          components.append(.simple(.string(newString)))
-        default:
-          components.append(.simple(.string(attributedString)))
-        }
+    return try children
+      .reduce(into: [CommonMarkComponent]()) { components, node in
+        let nodeComponents = try node.makeComponents(with: tokenizer, attributes: attributes)
+        components.append(contentsOf: nodeComponents)
       }
-    }
+      .reduce(into: [CommonMarkComponent]())  { components, component in
+        guard
+          case let .simple(.string(lastString)) = components.last,
+          case let .simple(.string(newString)) = component
+        else {
+          components.append(component)
+          return
+        }
+        components.removeLast()
+        let foldedString = [lastString, newString].joined()
+        components.append(.simple(.string(foldedString)))
+      }
   }
   
   private func parseExtension(
