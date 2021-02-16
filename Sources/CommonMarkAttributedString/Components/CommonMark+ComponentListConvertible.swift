@@ -9,6 +9,13 @@ import CommonMark
 import CoreGraphics
 import Foundation
 
+#if canImport(UIKit)
+import class UIKit.NSMutableParagraphStyle
+import class UIKit.NSTextTab
+import class UIKit.NSParagraphStyle
+import class UIKit.UIFont
+#endif
+
 protocol ComponentListConvertible {
   func makeComponents(with tokenizer: Tokenizer, attributes: [NSAttributedString.Key: Any]) throws -> [CommonMarkComponent]
 }
@@ -294,8 +301,29 @@ extension Node: ComponentListConvertible {
     }
     
     let delimiter = list.delimiter(at: position)
-    let indentation = String(repeating: "\t", count: list.nestingLevel)
-    let mutableAttributedString = NSMutableAttributedString(string: indentation + delimiter + " ", attributes: attributes)
+    var itemAttributes = attributes
+    
+    #if canImport(UIKit)
+    func makeIndent(for level: Int, font: UIFont) -> CGFloat {
+      CGFloat(level) * font.pointSize
+    }
+    
+    if let font = attributes[.font] as? UIFont {
+      let headIndent = makeIndent(for: list.nestingLevel + 1, font: font)
+      let firstLineHeadIndent = makeIndent(for: list.nestingLevel, font: font)
+      
+      let existingParagraphStyle = (attributes[.paragraphStyle] as? NSParagraphStyle)?.mutableCopy() as? NSMutableParagraphStyle
+      let itemParagraphStyle = existingParagraphStyle ?? NSMutableParagraphStyle()
+      itemParagraphStyle.headIndent = headIndent
+      itemParagraphStyle.firstLineHeadIndent = firstLineHeadIndent
+      
+      let tab = NSTextTab(textAlignment: .natural, location: headIndent, options: [:])
+      itemParagraphStyle.tabStops = [tab]
+      itemAttributes[.paragraphStyle] = itemParagraphStyle
+    }
+    #endif
+    
+    let mutableAttributedString = NSMutableAttributedString(string: delimiter + "\t", attributes: itemAttributes)
     
     let originalFirst = components.removeFirst()
     switch originalFirst {
