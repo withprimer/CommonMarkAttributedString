@@ -304,6 +304,10 @@ extension Node: ComponentListConvertible {
     var itemAttributes = attributes
     
     #if canImport(UIKit)
+    func makeIndent(for level: Int, font: UIFont) -> CGFloat {
+      CGFloat(level) * font.pointSize
+    }
+    
     if let font = attributes[.font] as? UIFont {
       let headIndent = makeIndent(for: list.nestingLevel + 1, font: font)
       let firstLineHeadIndent = makeIndent(for: list.nestingLevel, font: font)
@@ -333,9 +337,5 @@ extension Node: ComponentListConvertible {
     }
     
     return components
-  }
-  
-  private func makeIndent(for level: Int, font: UIFont) -> CGFloat {
-    CGFloat(level) * font.pointSize
   }
 }
