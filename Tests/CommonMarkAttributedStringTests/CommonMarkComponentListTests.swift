@@ -579,7 +579,7 @@ final class CommonMarkComponentListTests: XCTestCase {
       let headerAttributes = str.attributes(at: 0, effectiveRange: nil)
       #if canImport(UIKit)
       let headerFont = headerAttributes[.font] as! UIFont
-      XCTAssert(headerFont.fontDescriptor.symbolicTraits.contains(.italic))
+      XCTAssert(headerFont.fontDescriptor.symbolicTraits.contains(.traitItalic))
       #elseif canImport(AppKit)
       let headerFont = headerAttributes[.font] as! NSFont
       XCTAssert(headerFont.fontDescriptor.symbolicTraits.contains(.italic))
