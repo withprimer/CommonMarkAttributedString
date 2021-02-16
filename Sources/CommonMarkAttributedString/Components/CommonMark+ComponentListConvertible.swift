@@ -311,7 +311,7 @@ extension Node: ComponentListConvertible {
       
       let itemParagraphStyle = NSMutableParagraphStyle()
       itemParagraphStyle.headIndent = indentLocation * 3
-      itemParagraphStyle.firstLineHeadIndent = indentation
+      itemParagraphStyle.firstLineHeadIndent = indentLocation
       
       let tab = NSTextTab(textAlignment: .natural, location: indentLocation * 3, options: [:])
       itemParagraphStyle.tabStops = [tab]
