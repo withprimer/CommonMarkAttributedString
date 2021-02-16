@@ -307,7 +307,7 @@ extension Node: ComponentListConvertible {
     
     #if canImport(UIKit)
     if let font = attributes[.font] as? UIFont {
-      let indentLocation = CGFloat(list.nestingLevel + 1) * font.pointSize.rounded()
+      let indentLocation = CGFloat(list.nestingLevel + 2) * font.pointSize.rounded()
       
       let itemParagraphStyle = NSMutableParagraphStyle()
       itemParagraphStyle.headIndent = indentLocation
