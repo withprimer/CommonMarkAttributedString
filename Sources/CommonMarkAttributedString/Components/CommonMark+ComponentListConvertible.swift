@@ -13,6 +13,7 @@ import Foundation
 import class UIKit.NSMutableParagraphStyle
 import class UIKit.NSTextTab
 import class UIKit.NSParagraphStyle
+import class UIKit.UIFont
 #endif
 
 protocol ComponentListConvertible {
@@ -305,14 +306,18 @@ extension Node: ComponentListConvertible {
     var itemAttributes = attributes
     
     #if canImport(UIKit)
-    let itemParagraphStyle = NSMutableParagraphStyle()
-    itemParagraphStyle.headIndent = 0
-    itemParagraphStyle.firstLineHeadIndent = 0
-    
-    let tab = NSTextTab(textAlignment: .natural, location: 0, options: [:])
-    itemParagraphStyle.tabStops = [tab]
-    
-    itemAttributes[.paragraphStyle] = itemParagraphStyle
+    if let font = attributes[.font] as? UIFont {
+      let indentLocation = CGFloat(list.nestingLevel) * font.pointSize.rounded()
+      
+      let itemParagraphStyle = NSMutableParagraphStyle()
+      itemParagraphStyle.headIndent = indentLocation
+      itemParagraphStyle.firstLineHeadIndent = 0
+      
+      let tab = NSTextTab(textAlignment: .natural, location: indentLocation, options: [:])
+      itemParagraphStyle.tabStops = [tab]
+      
+      itemAttributes[.paragraphStyle] = itemParagraphStyle
+    }
     #endif
     
     let mutableAttributedString = NSMutableAttributedString(string: indentation + delimiter + " ", attributes: itemAttributes)
