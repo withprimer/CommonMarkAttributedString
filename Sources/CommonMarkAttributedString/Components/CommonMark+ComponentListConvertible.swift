@@ -305,15 +305,16 @@ extension Node: ComponentListConvertible {
     
     #if canImport(UIKit)
     if let font = attributes[.font] as? UIFont {
-      let indentLocation = CGFloat(list.nestingLevel) * font.pointSize
+      let headIndent = makeIndent(for: list.nestingLevel + 1, font: font)
+      let firstLineHeadIndent = makeIndent(for: list.nestingLevel, font: font)
       
-      let itemParagraphStyle = NSMutableParagraphStyle()
-      itemParagraphStyle.headIndent = indentLocation + (font.pointSize * 2)
-      itemParagraphStyle.firstLineHeadIndent = indentLocation
+      let existingParagraphStyle = (attributes[.paragraphStyle] as? NSParagraphStyle)?.mutableCopy() as? NSMutableParagraphStyle
+      let itemParagraphStyle = existingParagraphStyle ?? NSMutableParagraphStyle()
+      itemParagraphStyle.headIndent = headIndent
+      itemParagraphStyle.firstLineHeadIndent = firstLineHeadIndent
       
-      let tab = NSTextTab(textAlignment: .natural, location: indentLocation + (font.pointSize * 2), options: [:])
+      let tab = NSTextTab(textAlignment: .natural, location: headIndent, options: [:])
       itemParagraphStyle.tabStops = [tab]
-      
       itemAttributes[.paragraphStyle] = itemParagraphStyle
     }
     #endif
@@ -332,5 +333,9 @@ extension Node: ComponentListConvertible {
     }
     
     return components
+  }
+  
+  private func makeIndent(for level: Int, font: UIFont) -> CGFloat {
+    CGFloat(level) * font.pointSize
   }
 }
