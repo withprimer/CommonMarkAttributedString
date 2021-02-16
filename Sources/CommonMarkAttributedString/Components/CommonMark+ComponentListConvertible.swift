@@ -301,26 +301,24 @@ extension Node: ComponentListConvertible {
     }
     
     let delimiter = list.delimiter(at: position)
-    let indentation = String(repeating: "\t", count: list.nestingLevel)
-    
     var itemAttributes = attributes
     
     #if canImport(UIKit)
     if let font = attributes[.font] as? UIFont {
-      let indentLocation = font.pointSize
+      let indentLocation = CGFloat(list.nestingLevel) * font.pointSize
       
       let itemParagraphStyle = NSMutableParagraphStyle()
-      itemParagraphStyle.headIndent = indentLocation * 3
+      itemParagraphStyle.headIndent = indentLocation + (font.pointSize * 2)
       itemParagraphStyle.firstLineHeadIndent = indentLocation
       
-      let tab = NSTextTab(textAlignment: .natural, location: indentLocation * 3, options: [:])
+      let tab = NSTextTab(textAlignment: .natural, location: indentLocation + (font.pointSize * 2), options: [:])
       itemParagraphStyle.tabStops = [tab]
       
       itemAttributes[.paragraphStyle] = itemParagraphStyle
     }
     #endif
     
-    let mutableAttributedString = NSMutableAttributedString(string: indentation + delimiter + "\t", attributes: itemAttributes)
+    let mutableAttributedString = NSMutableAttributedString(string: delimiter + "\t", attributes: itemAttributes)
     
     let originalFirst = components.removeFirst()
     switch originalFirst {
