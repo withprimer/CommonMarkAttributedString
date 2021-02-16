@@ -19,24 +19,26 @@ extension Node: ComponentListConvertible {
   
   func makeComponents(with tokenizer: Tokenizer, attributes: [NSAttributedString.Key: Any]) throws -> [CommonMarkComponent] {
     switch self {
-    case let container as ContainerOfBlocks:
-      return try makeBlockContainerComponents(
-        for: container.description.unescapedForCommonmark(),
-        children: container.children,
-        tokenizer: tokenizer,
-        attributes: attributes).joined(separator: "\u{2029}")
-      
     case let blockQuote as BlockQuote:
-      let str = try blockQuote.attributedString(attributes: attributes, attachments: [:])
-      return [.simple(.string(str))]
+      return try makeBlockQuoteComponents(
+        for: blockQuote,
+        children: blockQuote.children,
+        tokenizer: tokenizer,
+        attributes: attributes)
       
     case let codeBlock as CodeBlock:
-      let str = try codeBlock.attributedString(attributes: attributes, attachments: [:])
-      return [.simple(.string(str))]
+      return try makeCodeBlockComponents(
+        for: codeBlock,
+        children: codeBlock.children,
+        tokenizer: tokenizer,
+        attributes: attributes)
       
     case let heading as Heading:
-      let str = try heading.attributedString(attributes: attributes, attachments: [:])
-      return [.simple(.string(str))]
+      return try makeHeadingComponents(
+        for: heading,
+        children: heading.children,
+        tokenizer: tokenizer,
+        attributes: attributes)
       
     case let list as List:
       return try makeListComponents(
@@ -44,18 +46,19 @@ extension Node: ComponentListConvertible {
         children: list.children,
         tokenizer: tokenizer,
         attributes: attributes).joined(separator: "\u{2029}")
-      
-    case let container as ContainerOfInlineElements:
-      guard !container.children.contains(where: { $0 is RawHTML }) else {
-        let html = try Document(container.description).render(format: .html)
-        let htmlString = try NSAttributedString(html: html, attributes: attributes) ?? NSAttributedString()
-        return [.simple(.string(htmlString))]
-      }
-      return try foldedComponents(
-        for: container.description.unescapedForCommonmark(),
+    
+    case let container as ContainerOfBlocks:
+      return try makeBlockContainerComponents(
+        for: container,
         children: container.children,
         tokenizer: tokenizer,
-        attributes: attributes).joined()
+        attributes: attributes)
+      
+    case let container as ContainerOfInlineElements:
+      return try makeInlineContainerComponents(
+        for: container,
+        tokenizer: tokenizer,
+        attributes: attributes)
       
     default:
       let simpleComponents = try makeSimpleComponents(attributes: attributes)
@@ -80,6 +83,46 @@ extension Node: ComponentListConvertible {
   
   // MARK: Private
   
+  private func makeBlockQuoteComponents(
+    for blockQuote: BlockQuote,
+    children: [Node],
+    tokenizer: Tokenizer,
+    attributes: [NSAttributedString.Key: Any]) throws -> [CommonMarkComponent]
+  {
+    let overriddenAttributes = blockQuote.attributes(with: attributes)
+    return try makeBlockContainerComponents(
+      for: blockQuote,
+      children: children,
+      tokenizer: tokenizer,
+      attributes: overriddenAttributes)
+  }
+  
+  private func makeCodeBlockComponents(
+    for codeBlock: CodeBlock,
+    children: [Inline & Node],
+    tokenizer: Tokenizer,
+    attributes: [NSAttributedString.Key: Any]) throws -> [CommonMarkComponent]
+  {
+    let overriddenAttributes = codeBlock.attributes(with: attributes)
+    return try makeInlineContainerComponents(
+      for: codeBlock,
+      tokenizer: tokenizer,
+      attributes: overriddenAttributes)
+  }
+  
+  private func makeHeadingComponents(
+    for heading: Heading,
+    children: [Inline & Node],
+    tokenizer: Tokenizer,
+    attributes: [NSAttributedString.Key: Any]) throws -> [CommonMarkComponent]
+  {
+    let overriddenAttributes = heading.attributes(with: attributes)
+    return try makeInlineContainerComponents(
+      for: heading,
+      tokenizer: tokenizer,
+      attributes: overriddenAttributes)
+  }
+  
   private func makeListComponents(
     for list: List,
     children: [List.Item],
@@ -96,6 +139,19 @@ extension Node: ComponentListConvertible {
     }
   }
   
+  private func makeBlockContainerComponents(
+    for container: ContainerOfBlocks,
+    children: [Node],
+    tokenizer: Tokenizer,
+    attributes: [NSAttributedString.Key: Any]) throws -> [CommonMarkComponent]
+  {
+    return try makeBlockContainerComponents(
+      for: container.description.unescapedForCommonmark(),
+      children: container.children,
+      tokenizer: tokenizer,
+      attributes: attributes).joined(separator: "\u{2029}")
+  }
+
   private func makeBlockContainerComponents(
     for containerString: String,
     children: [Node],
@@ -120,6 +176,23 @@ extension Node: ComponentListConvertible {
     }
     
     return try children.flatMap { try $0.makeComponents(with: tokenizer, attributes: attributes) }
+  }
+  
+  private func makeInlineContainerComponents(
+    for container: ContainerOfInlineElements,
+    tokenizer: Tokenizer,
+    attributes: [NSAttributedString.Key: Any]) throws -> [CommonMarkComponent]
+  {
+    guard !container.children.contains(where: { $0 is RawHTML }) else {
+      let html = try Document(container.description).render(format: .html)
+      let htmlString = try NSAttributedString(html: html, attributes: attributes) ?? NSAttributedString()
+      return [.simple(.string(htmlString))]
+    }
+    return try foldedComponents(
+      for: container.description.unescapedForCommonmark(),
+      children: container.children,
+      tokenizer: tokenizer,
+      attributes: attributes).joined()
   }
   
   /// "Folds" the child elements into their `NSAttributedString`s when applicable, breaking them apart when images or extensions are encountered

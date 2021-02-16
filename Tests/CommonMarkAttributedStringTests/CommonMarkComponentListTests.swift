@@ -497,4 +497,97 @@ final class CommonMarkComponentListTests: XCTestCase {
       XCTFail("Expected .string to be the first component in \(components)")
     }
   }
+  
+  func testHeadingAndImage() throws {
+    let commonmark = """
+    # This is a heading ![](https://res.cloudinary.com/primer-cloudinary/image/upload/v1599788011/upg8sag6kgtpt8vqos1s.png)And more heading
+    """
+    
+    #if canImport(UIKit)
+    let attributes: [NSAttributedString.Key: Any] = [
+        .font: UIFont.systemFont(ofSize: 24.0),
+        .foregroundColor: UIColor.systemBlue
+    ]
+    #elseif canImport(AppKit)
+    let attributes: [NSAttributedString.Key: Any] = [
+        .font: NSFont.systemFont(ofSize: 24.0),
+        .foregroundColor: NSColor.systemBlue
+    ]
+    #endif
+    
+    let components = try CommonMarkComponentList(
+      commonmark: commonmark,
+      attributes: attributes).components
+    
+    XCTAssertEqual(components.count, 3)
+    if case .simple(.string(let str)) = components.first {
+      XCTAssertEqual(str.string, "This is a heading ")
+    } else {
+      XCTFail("Expected .string to be the first component in \(components)")
+    }
+    
+    if case .simple(.url(let url)) = components.dropFirst().first {
+      XCTAssertEqual(url.absoluteString, "https://res.cloudinary.com/primer-cloudinary/image/upload/v1599788011/upg8sag6kgtpt8vqos1s.png")
+    } else {
+      XCTFail("Expected .url to be the last component in \(components)")
+    }
+    
+    if case .simple(.string(let str)) = components.last {
+      XCTAssertEqual(str.string, "And more heading")
+      
+      // Also test that it retains its header attributes.
+      let headerAttributes = str.attributes(at: 0, effectiveRange: nil)
+      #if canImport(UIKit)
+      let headerFont = headerAttributes[.font] as! UIFont
+      XCTAssertEqual(headerFont.pointSize, 48)
+      #elseif canImport(AppKit)
+      let headerFont = headerAttributes[.font] as! NSFont
+      XCTAssertEqual(headerFont.pointSize, 48)
+      #endif
+    } else {
+      XCTFail("Expected .string to be the last component in \(components)")
+    }
+  }
+
+  
+  func testBlockQuoteAttributes() throws {
+    let commonmark = """
+    > I was quoting some amazing content that I found on the internet and
+    > it is pretty cool how it is a quote.
+    > The new lines don't matter here.
+    """
+    
+    #if canImport(UIKit)
+    let attributes: [NSAttributedString.Key: Any] = [
+        .font: UIFont.systemFont(ofSize: 24.0),
+        .foregroundColor: UIColor.systemBlue
+    ]
+    #elseif canImport(AppKit)
+    let attributes: [NSAttributedString.Key: Any] = [
+        .font: NSFont.systemFont(ofSize: 24.0),
+        .foregroundColor: NSColor.systemBlue
+    ]
+    #endif
+    
+    let components = try CommonMarkComponentList(
+      commonmark: commonmark,
+      attributes: attributes).components
+    
+    XCTAssertEqual(components.count, 1)
+    if case .simple(.string(let str)) = components.first {
+      XCTAssertEqual(str.string, "I was quoting some amazing content that I found on the internet and it is pretty cool how it is a quote. The new lines don't matter here.")
+      let headerAttributes = str.attributes(at: 0, effectiveRange: nil)
+      #if canImport(UIKit)
+      let headerFont = headerAttributes[.font] as! UIFont
+      XCTAssert(headerFont.fontDescriptor.symbolicTraits.contains(.italic))
+      #elseif canImport(AppKit)
+      let headerFont = headerAttributes[.font] as! NSFont
+      XCTAssert(headerFont.fontDescriptor.symbolicTraits.contains(.italic))
+      
+      #endif
+
+    } else {
+      XCTFail("Expected .string to be the first component in \(components)")
+    }
+  }
 }
