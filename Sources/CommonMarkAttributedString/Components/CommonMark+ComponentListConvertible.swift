@@ -305,22 +305,22 @@ extension Node: ComponentListConvertible {
     
     var itemAttributes = attributes
     
-//    #if canImport(UIKit)
-//    if let font = attributes[.font] as? UIFont {
-//      let indentLocation = CGFloat(list.nestingLevel + 1) * font.pointSize.rounded()
-//      
-//      let itemParagraphStyle = NSMutableParagraphStyle()
-//      itemParagraphStyle.headIndent = 0
-//      itemParagraphStyle.firstLineHeadIndent = 0
-//      
-//      let tab = NSTextTab(textAlignment: .natural, location: indentLocation, options: [:])
-//      itemParagraphStyle.tabStops = [tab]
-//      
-//      itemAttributes[.paragraphStyle] = itemParagraphStyle
-//    }
-//    #endif
+    #if canImport(UIKit)
+    if let font = attributes[.font] as? UIFont {
+      let indentLocation = CGFloat(indentation.count + delimiter.count) * font.pointSize.rounded()
+      
+      let itemParagraphStyle = NSMutableParagraphStyle()
+      itemParagraphStyle.headIndent = indentLocation
+      itemParagraphStyle.firstLineHeadIndent = 0
+      
+      let tab = NSTextTab(textAlignment: .natural, location: indentLocation, options: [:])
+      itemParagraphStyle.tabStops = [tab]
+      
+      itemAttributes[.paragraphStyle] = itemParagraphStyle
+    }
+    #endif
     
-    let mutableAttributedString = NSMutableAttributedString(string: indentation + delimiter + " ", attributes: itemAttributes)
+    let mutableAttributedString = NSMutableAttributedString(string: indentation + delimiter + "\t", attributes: itemAttributes)
     
     let originalFirst = components.removeFirst()
     switch originalFirst {
