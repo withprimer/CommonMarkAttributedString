@@ -296,7 +296,7 @@ final class CommonMarkComponentListTests: XCTestCase {
     }
     
     if case .simple(.string(let str)) = components.dropFirst().first {
-      XCTAssertEqual(str.string, "For this project you will invent a device that keeps an egg from cracking when it is dropped from 7 feet high (or higher!).\u{2029}Here are the rules you must follow:\u{2029}\t• Your device must be dropped with the egg; you can't build anything on the ground for the egg to land on.\u{2029}\t• The floor must be hard, like in a kitchen or outside on a sidewalk or thin grass. No dropping it on carpet!\u{2029}\t• You must prevent the egg from making a mess if your invention fails. Lay down some trash bags where you drop it to catch any mess you might make.\u{2029}To get started, explore your home and look for recyclables or other materials you could use for building your device.")
+      XCTAssertEqual(str.string, "For this project you will invent a device that keeps an egg from cracking when it is dropped from 7 feet high (or higher!).\u{2029}Here are the rules you must follow:\u{2029}•\tYour device must be dropped with the egg; you can't build anything on the ground for the egg to land on.\u{2029}•\tThe floor must be hard, like in a kitchen or outside on a sidewalk or thin grass. No dropping it on carpet!\u{2029}•\tYou must prevent the egg from making a mess if your invention fails. Lay down some trash bags where you drop it to catch any mess you might make.\u{2029}To get started, explore your home and look for recyclables or other materials you could use for building your device.")
     } else {
       XCTFail("Expected .simple(.string)) to be the second component")
     }
@@ -327,7 +327,7 @@ final class CommonMarkComponentListTests: XCTestCase {
     XCTAssertEqual(components.count, 1)
 
     if case .simple(.string(let str)) = components.first {
-      XCTAssertEqual(str.string, "\t1. Cut a piece of paper into a 1.5\" x 11\" strip.\u{2029}\t2. Roll it around your straw and tape it in three places to hold it's shape. The straw shown here is a paper straw made using the instructions in a prior step of this project.")
+      XCTAssertEqual(str.string, "1.\tCut a piece of paper into a 1.5\" x 11\" strip.\u{2029}2.\tRoll it around your straw and tape it in three places to hold it's shape. The straw shown here is a paper straw made using the instructions in a prior step of this project.")
     } else {
       XCTFail("Expected .simple(.string)) to be the first component")
     }
@@ -360,7 +360,7 @@ final class CommonMarkComponentListTests: XCTestCase {
     XCTAssertEqual(components.count, 4)
 
     if case .simple(.string(let str)) = components.first {
-      XCTAssertEqual(str.string, "\t1. Cut a piece of paper into a 1.5\" x 11\" strip. ")
+      XCTAssertEqual(str.string, "1.\tCut a piece of paper into a 1.5\" x 11\" strip. ")
     } else {
       XCTFail("Expected .simple(.string)) to be the first component")
     }
@@ -372,7 +372,7 @@ final class CommonMarkComponentListTests: XCTestCase {
     }
 
     if case .simple(.string(let str)) = components.dropFirst(2).first {
-      XCTAssertEqual(str.string, "\t2. Roll it around your straw and tape it in three places to hold it's shape. The straw shown here is a paper straw made using the instructions in a prior step of this project. ")
+      XCTAssertEqual(str.string, "2.\tRoll it around your straw and tape it in three places to hold it's shape. The straw shown here is a paper straw made using the instructions in a prior step of this project. ")
     } else {
       XCTFail("Expected .simple(.string)) to be the first component")
     }
@@ -409,7 +409,7 @@ final class CommonMarkComponentListTests: XCTestCase {
     XCTAssertEqual(components.count, 3)
 
     if case .simple(.string(let str)) = components.first {
-      XCTAssertEqual(str.string, "\t1. ")
+      XCTAssertEqual(str.string, "1.\t")
     } else {
       XCTFail("Expected .simple(.string)) to be the first component")
     }
@@ -421,7 +421,7 @@ final class CommonMarkComponentListTests: XCTestCase {
     }
 
     if case .simple(.string(let str)) = components.dropFirst(2).first {
-      XCTAssertEqual(str.string, "\t2. Roll it around your straw")
+      XCTAssertEqual(str.string, "2.\tRoll it around your straw")
     } else {
       XCTFail("Expected .simple(.string)) to be the third component")
     }
