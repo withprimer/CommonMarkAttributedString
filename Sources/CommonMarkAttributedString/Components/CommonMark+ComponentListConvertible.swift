@@ -307,13 +307,13 @@ extension Node: ComponentListConvertible {
     
     #if canImport(UIKit)
     if let font = attributes[.font] as? UIFont {
-      let indentLocation = CGFloat(indentation.count + delimiter.count) * font.pointSize.rounded()
+      let indentLocation = font.pointSize
       
       let itemParagraphStyle = NSMutableParagraphStyle()
-      itemParagraphStyle.headIndent = indentLocation
-      itemParagraphStyle.firstLineHeadIndent = 0
+      itemParagraphStyle.headIndent = indentLocation * 3
+      itemParagraphStyle.firstLineHeadIndent = indentation
       
-      let tab = NSTextTab(textAlignment: .natural, location: indentLocation, options: [:])
+      let tab = NSTextTab(textAlignment: .natural, location: indentLocation * 3, options: [:])
       itemParagraphStyle.tabStops = [tab]
       
       itemAttributes[.paragraphStyle] = itemParagraphStyle
