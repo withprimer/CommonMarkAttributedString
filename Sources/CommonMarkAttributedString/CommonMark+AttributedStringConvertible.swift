@@ -15,11 +15,12 @@ import class AppKit.NSTextList
 // MARK: -
 
 extension Node: AttributedStringConvertible {
-    @objc func attributes(with attributes: [NSAttributedString.Key : Any]) -> [NSAttributedString.Key : Any] {
+  
+  @objc public func attributes(with attributes: [NSAttributedString.Key : Any]) -> [NSAttributedString.Key : Any] {
         return attributes
     }
 
-    @objc func attributedString(attributes: [NSAttributedString.Key: Any], attachments: [String: NSTextAttachment]) throws -> NSAttributedString {
+  @objc public func attributedString(attributes: [NSAttributedString.Key: Any], attachments: [String: NSTextAttachment]) throws -> NSAttributedString {
         let attributes = self.attributes(with: attributes)
 
         switch self {
@@ -54,7 +55,7 @@ extension Node: AttributedStringConvertible {
 // MARK: Block Elements
 
 extension BlockQuote {
-    override func attributes(with attributes: [NSAttributedString.Key: Any]) -> [NSAttributedString.Key: Any] {
+  public override func attributes(with attributes: [NSAttributedString.Key: Any]) -> [NSAttributedString.Key: Any] {
         var attributes = attributes
 
         #if canImport(UIKit)
@@ -70,7 +71,7 @@ extension BlockQuote {
 }
 
 extension CodeBlock {
-    override func attributes(with attributes: [NSAttributedString.Key: Any]) -> [NSAttributedString.Key: Any] {
+  public override func attributes(with attributes: [NSAttributedString.Key: Any]) -> [NSAttributedString.Key: Any] {
         var attributes = attributes
 
         #if canImport(UIKit)
@@ -99,7 +100,7 @@ extension Heading {
         }
     }
 
-    override func attributes(with attributes: [NSAttributedString.Key: Any]) -> [NSAttributedString.Key: Any] {
+  public override func attributes(with attributes: [NSAttributedString.Key: Any]) -> [NSAttributedString.Key: Any] {
         var attributes = attributes
 
         #if canImport(UIKit)
@@ -164,7 +165,7 @@ extension List.Item {
 // MARK: Inline Elements
 
 extension Code {
-    override func attributes(with attributes: [NSAttributedString.Key: Any]) -> [NSAttributedString.Key: Any] {
+  public override func attributes(with attributes: [NSAttributedString.Key: Any]) -> [NSAttributedString.Key: Any] {
         var attributes = attributes
 
         #if canImport(UIKit)
@@ -180,7 +181,7 @@ extension Code {
 }
 
 extension Emphasis {
-    override func attributes(with attributes: [NSAttributedString.Key: Any]) -> [NSAttributedString.Key: Any] {
+  public override func attributes(with attributes: [NSAttributedString.Key: Any]) -> [NSAttributedString.Key: Any] {
         var attributes = attributes
 
         #if canImport(UIKit)
@@ -197,7 +198,7 @@ extension Emphasis {
 }
 
 extension Image {
-    override func attributedString(attributes: [NSAttributedString.Key: Any], attachments: [String: NSTextAttachment]) throws -> NSAttributedString {
+  public override func attributedString(attributes: [NSAttributedString.Key: Any], attachments: [String: NSTextAttachment]) throws -> NSAttributedString {
         guard let urlString = urlString else { return NSAttributedString() }
         guard let attachment = attachments[urlString] else { fatalError("missing attachment for \(urlString)") }
         return NSAttributedString(attachment: attachment)
@@ -205,7 +206,7 @@ extension Image {
 }
 
 extension Link {
-    override func attributes(with attributes: [NSAttributedString.Key: Any]) -> [NSAttributedString.Key: Any] {
+  public override func attributes(with attributes: [NSAttributedString.Key: Any]) -> [NSAttributedString.Key: Any] {
         var attributes = attributes
 
         if let urlString = urlString, let url = URL(string: urlString) {
@@ -223,7 +224,7 @@ extension Link {
 }
 
 extension Strong {
-    override func attributes(with attributes: [NSAttributedString.Key: Any]) -> [NSAttributedString.Key: Any] {
+  public override func attributes(with attributes: [NSAttributedString.Key: Any]) -> [NSAttributedString.Key: Any] {
         var attributes = attributes
 
         #if canImport(UIKit)
@@ -239,7 +240,7 @@ extension Strong {
 }
 
 extension Text {
-    override func attributedString(attributes: [NSAttributedString.Key: Any], attachments: [String: NSTextAttachment]) throws -> NSAttributedString {
+  public override func attributedString(attributes: [NSAttributedString.Key: Any], attachments: [String: NSTextAttachment]) throws -> NSAttributedString {
         return NSAttributedString(string: literal ?? "", attributes: attributes)
     }
 }
