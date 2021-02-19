@@ -6,7 +6,7 @@ import class UIKit.NSTextAttachment
 import class AppKit.NSTextAttachment
 #endif
 
-protocol AttributedStringConvertible {
-    func attributes(with attributes: [NSAttributedString.Key: Any]) -> [NSAttributedString.Key: Any]
-    func attributedString(attributes: [NSAttributedString.Key: Any], attachments: [String: NSTextAttachment]) throws -> NSAttributedString
+public protocol AttributedStringConvertible {
+  func attributes(with attributes: [NSAttributedString.Key: Any]) -> [NSAttributedString.Key: Any]
+  func attributedString(attributes: [NSAttributedString.Key: Any], attachments: [String: NSTextAttachment]) throws -> NSAttributedString
 }
