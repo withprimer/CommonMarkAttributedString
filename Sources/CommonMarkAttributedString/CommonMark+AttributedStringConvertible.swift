@@ -4,11 +4,8 @@ import class Foundation.NSAttributedString
 import struct CoreGraphics.CGFloat
 
 #if canImport(UIKit)
-import class UIKit.NSMutableParagraphStyle
-import class UIKit.NSTextAttachment
-import class UIKit.NSParagraphStyle
-import class UIKit.NSTextTab
 import class UIKit.UIFont
+import class UIKit.NSTextAttachment
 #elseif canImport(AppKit)
 import class AppKit.NSFont
 import class AppKit.NSTextAttachment
