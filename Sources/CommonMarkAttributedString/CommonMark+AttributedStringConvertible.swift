@@ -116,6 +116,11 @@ extension Heading {
 }
 
 extension List {
+  
+    public override func attributes(with attributes: [NSAttributedString.Key : Any]) -> [NSAttributedString.Key : Any] {
+      modifiedItemAttributes(for: attributes)
+    }
+  
     func delimiter(at position: Int) -> String {
       kind == .ordered ? "\(position + 1)." : "•"
     }
@@ -138,7 +143,7 @@ extension List.Item {
     func attributedString(in list: List, at position: Int, attributes: [NSAttributedString.Key: Any], attachments: [String: NSTextAttachment]) throws -> NSAttributedString {
 
         var delimiter = list.delimiter(at: position)
-        let itemAttributes = list.modifiedItemAttributes(for: attributes)
+        let itemAttributes = list.attributes(with: attributes)
       
         #if os(macOS) && canImport(AppKit)
         if #available(OSX 10.13, *) {
