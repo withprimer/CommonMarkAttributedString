@@ -4,8 +4,11 @@ import class Foundation.NSAttributedString
 import struct CoreGraphics.CGFloat
 
 #if canImport(UIKit)
-import class UIKit.UIFont
+import class UIKit.NSMutableParagraphStyle
 import class UIKit.NSTextAttachment
+import class UIKit.NSParagraphStyle
+import class UIKit.NSTextTab
+import class UIKit.UIFont
 #elseif canImport(AppKit)
 import class AppKit.NSFont
 import class AppKit.NSTextAttachment
@@ -135,9 +138,11 @@ extension List.Item {
     }
 
     // TODO: Represent lists with NSTextList on macOS
-    fileprivate func attributedString(in list: List, at position: Int, attributes: [NSAttributedString.Key: Any], attachments: [String: NSTextAttachment]) throws -> NSAttributedString {
+    func attributedString(in list: List, at position: Int, attributes: [NSAttributedString.Key: Any], attachments: [String: NSTextAttachment]) throws -> NSAttributedString {
 
-        var delimiter: String = list.delimiter(at: position)
+        var delimiter = list.delimiter(at: position)
+        let itemAttributes = list.modifiedItemAttributes(for: attributes)
+      
         #if os(macOS) && canImport(AppKit)
         if #available(OSX 10.13, *) {
             let format: NSTextList.MarkerFormat
@@ -153,10 +158,8 @@ extension List.Item {
             delimiter = NSTextList(markerFormat: format, options: 0).marker(forItemNumber: position + 1)
         }
         #endif
-
-        let indentation = String(repeating: "\t", count: list.nestingLevel)
-
-        let mutableAttributedString = NSMutableAttributedString(string: indentation + delimiter + " ", attributes: attributes)
+      
+        let mutableAttributedString = NSMutableAttributedString(string: delimiter + "\t", attributes: itemAttributes)
         mutableAttributedString.append(try children.map { try $0.attributedString(attributes: attributes, attachments: attachments) }.joined(separator: "\u{2029}"))
         return mutableAttributedString
     }

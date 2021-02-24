@@ -136,13 +136,15 @@ extension Node: ComponentListConvertible {
     tokenizer: Tokenizer,
     attributes: [NSAttributedString.Key: Any]) throws -> [CommonMarkComponent]
   {
+    let overriddenAttributes = list.attributes(with: attributes)
     return try children.enumerated().flatMap { offset, child -> [CommonMarkComponent] in
-      try child.makeListItemComponents(
+      let childAttributes = child.attributes(with: overriddenAttributes)
+      return try child.makeListItemComponents(
         in: list,
         for: child,
         at: offset,
         with: tokenizer,
-        attributes: attributes)
+        attributes: childAttributes)
     }
   }
   
@@ -301,28 +303,7 @@ extension Node: ComponentListConvertible {
     }
     
     let delimiter = list.delimiter(at: position)
-    var itemAttributes = attributes
-    
-    #if canImport(UIKit)
-    func makeIndent(for level: Int, font: UIFont) -> CGFloat {
-      CGFloat(level) * font.pointSize
-    }
-    
-    if let font = attributes[.font] as? UIFont {
-      let headIndent = makeIndent(for: list.nestingLevel + 1, font: font)
-      let firstLineHeadIndent = makeIndent(for: list.nestingLevel, font: font)
-      
-      let existingParagraphStyle = (attributes[.paragraphStyle] as? NSParagraphStyle)?.mutableCopy() as? NSMutableParagraphStyle
-      let itemParagraphStyle = existingParagraphStyle ?? NSMutableParagraphStyle()
-      itemParagraphStyle.headIndent = headIndent
-      itemParagraphStyle.firstLineHeadIndent = firstLineHeadIndent
-      
-      let tab = NSTextTab(textAlignment: .natural, location: headIndent, options: [:])
-      itemParagraphStyle.tabStops = [tab]
-      itemAttributes[.paragraphStyle] = itemParagraphStyle
-    }
-    #endif
-    
+    let itemAttributes = list.modifiedItemAttributes(for: attributes)
     let mutableAttributedString = NSMutableAttributedString(string: delimiter + "\t", attributes: itemAttributes)
     
     let originalFirst = components.removeFirst()
@@ -337,5 +318,34 @@ extension Node: ComponentListConvertible {
     }
     
     return components
+  }
+}
+
+extension List {
+  
+  func modifiedItemAttributes(for attributes: [NSAttributedString.Key: Any]) -> [NSAttributedString.Key: Any] {
+    var itemAttributes = attributes
+    
+    #if canImport(UIKit)
+    func makeIndent(for level: Int, font: UIFont) -> CGFloat {
+      CGFloat(level) * font.pointSize
+    }
+    
+    if let font = attributes[.font] as? UIFont {
+      let headIndent = makeIndent(for: nestingLevel + 1, font: font)
+      let firstLineHeadIndent = makeIndent(for: nestingLevel, font: font)
+      
+      let existingParagraphStyle = (attributes[.paragraphStyle] as? NSParagraphStyle)?.mutableCopy() as? NSMutableParagraphStyle
+      let itemParagraphStyle = existingParagraphStyle ?? NSMutableParagraphStyle()
+      itemParagraphStyle.headIndent = headIndent
+      itemParagraphStyle.firstLineHeadIndent = firstLineHeadIndent
+      
+      let tab = NSTextTab(textAlignment: .natural, location: headIndent, options: [:])
+      itemParagraphStyle.tabStops = [tab]
+      itemAttributes[.paragraphStyle] = itemParagraphStyle
+    }
+    #endif
+    
+    return itemAttributes
   }
 }

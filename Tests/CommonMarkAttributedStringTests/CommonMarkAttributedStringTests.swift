@@ -97,4 +97,32 @@ final class CommonMarkAttributedStringTests: XCTestCase {
         XCTAssertGreaterThan((actualAttributes[.font] as? NSFont)?.pointSize ?? 0, font.pointSize)
         #endif
     }
+  
+    func testListIndents() throws {
+      let commonmark = """
+      1. Cut a piece of paper into a 1.5\" x 11\" strip.
+      1. Roll it around your straw and tape it in three places to hold it's shape. The straw shown here is a paper straw made using the instructions in a prior step of this project.
+      """
+
+      #if canImport(UIKit)
+      let attributes: [NSAttributedString.Key: Any] = [
+          .font: UIFont.systemFont(ofSize: 24.0),
+          .foregroundColor: UIColor.systemBlue
+      ]
+      #elseif canImport(AppKit)
+      let attributes: [NSAttributedString.Key: Any] = [
+          .font: NSFont.systemFont(ofSize: 24.0),
+          .foregroundColor: NSColor.systemBlue
+      ]
+      #endif
+
+      let attributedString = try NSAttributedString(commonmark: commonmark, attributes: attributes)
+      XCTAssertEqual(attributedString.string, "1.\tCut a piece of paper into a 1.5\" x 11\" strip.\u{2029}2.\tRoll it around your straw and tape it in three places to hold it's shape. The straw shown here is a paper straw made using the instructions in a prior step of this project.")
+      
+      if let paragraphStyle = attributedString.attribute(.paragraphStyle, at: 0, effectiveRange: nil) as? NSParagraphStyle {
+        XCTAssertEqual(paragraphStyle.headIndent, 48)
+      } else {
+        XCTFail("Expected a paragraphStyle at index 0")
+      }
+    }
 }
