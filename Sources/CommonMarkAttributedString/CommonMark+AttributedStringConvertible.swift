@@ -116,6 +116,11 @@ extension Heading {
 }
 
 extension List {
+  
+    public override func attributes(with attributes: [NSAttributedString.Key : Any]) -> [NSAttributedString.Key : Any] {
+      modifiedItemAttributes(for: attributes)
+    }
+  
     func delimiter(at position: Int) -> String {
       kind == .ordered ? "\(position + 1)." : "•"
     }
@@ -135,9 +140,11 @@ extension List.Item {
     }
 
     // TODO: Represent lists with NSTextList on macOS
-    fileprivate func attributedString(in list: List, at position: Int, attributes: [NSAttributedString.Key: Any], attachments: [String: NSTextAttachment]) throws -> NSAttributedString {
+    func attributedString(in list: List, at position: Int, attributes: [NSAttributedString.Key: Any], attachments: [String: NSTextAttachment]) throws -> NSAttributedString {
 
-        var delimiter: String = list.delimiter(at: position)
+        var delimiter = list.delimiter(at: position)
+        let itemAttributes = list.attributes(with: attributes)
+      
         #if os(macOS) && canImport(AppKit)
         if #available(OSX 10.13, *) {
             let format: NSTextList.MarkerFormat
@@ -153,10 +160,8 @@ extension List.Item {
             delimiter = NSTextList(markerFormat: format, options: 0).marker(forItemNumber: position + 1)
         }
         #endif
-
-        let indentation = String(repeating: "\t", count: list.nestingLevel)
-
-        let mutableAttributedString = NSMutableAttributedString(string: indentation + delimiter + " ", attributes: attributes)
+      
+        let mutableAttributedString = NSMutableAttributedString(string: delimiter + "\t", attributes: itemAttributes)
         mutableAttributedString.append(try children.map { try $0.attributedString(attributes: attributes, attachments: attachments) }.joined(separator: "\u{2029}"))
         return mutableAttributedString
     }
