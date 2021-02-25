@@ -116,15 +116,18 @@ final class CommonMarkAttributedStringTests: XCTestCase {
       ]
       #endif
 
+      #if canImport(UIKit)
       let attributedString = try NSAttributedString(commonmark: commonmark, attributes: attributes)
       XCTAssertEqual(attributedString.string, "1.\tCut a piece of paper into a 1.5\" x 11\" strip.\u{2029}2.\tRoll it around your straw and tape it in three places to hold it's shape. The straw shown here is a paper straw made using the instructions in a prior step of this project.")
       
-      #if canImport(UIKit)
       if let paragraphStyle = attributedString.attribute(.paragraphStyle, at: 0, effectiveRange: nil) as? NSParagraphStyle {
         XCTAssertEqual(paragraphStyle.headIndent, 48)
       } else {
         XCTFail("Expected a paragraphStyle at index 0")
       }
+      #elseif canImport(AppKit)
+      let attributedString = try NSAttributedString(commonmark: commonmark, attributes: attributes)
+      XCTAssertEqual(attributedString.string, "1\tCut a piece of paper into a 1.5\" x 11\" strip.\u{2029}2\tRoll it around your straw and tape it in three places to hold it's shape. The straw shown here is a paper straw made using the instructions in a prior step of this project.")
       #endif
     }
 }
