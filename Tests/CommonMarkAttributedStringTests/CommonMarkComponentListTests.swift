@@ -488,10 +488,10 @@ final class CommonMarkComponentListTests: XCTestCase {
       let headerAttributes = str.attributes(at: 0, effectiveRange: nil)
       #if canImport(UIKit)
       let headerFont = headerAttributes[.font] as! UIFont
-      XCTAssertEqual(headerFont.pointSize, 48)
+      XCTAssertEqual(headerFont.pointSize, 96)
       #elseif canImport(AppKit)
       let headerFont = headerAttributes[.font] as! NSFont
-      XCTAssertEqual(headerFont.pointSize, 48)
+      XCTAssertEqual(headerFont.pointSize, 96)
       #endif
     } else {
       XCTFail("Expected .string to be the first component in \(components)")
@@ -539,10 +539,10 @@ final class CommonMarkComponentListTests: XCTestCase {
       let headerAttributes = str.attributes(at: 0, effectiveRange: nil)
       #if canImport(UIKit)
       let headerFont = headerAttributes[.font] as! UIFont
-      XCTAssertEqual(headerFont.pointSize, 48)
+      XCTAssertEqual(headerFont.pointSize, 96)
       #elseif canImport(AppKit)
       let headerFont = headerAttributes[.font] as! NSFont
-      XCTAssertEqual(headerFont.pointSize, 48)
+      XCTAssertEqual(headerFont.pointSize, 96)
       #endif
     } else {
       XCTFail("Expected .string to be the last component in \(components)")
@@ -586,6 +586,58 @@ final class CommonMarkComponentListTests: XCTestCase {
       
       #endif
 
+    } else {
+      XCTFail("Expected .string to be the first component in \(components)")
+    }
+  }
+  
+  func testBasicAttributes() throws {
+    let commonmark = "A *bold* way to add __emphasis__ to your `code`"
+    
+    #if canImport(UIKit)
+    let attributes: [NSAttributedString.Key: Any] = [
+      .font: UIFont.systemFont(ofSize: 24.0),
+      .foregroundColor: UIColor.systemBlue
+    ]
+    #elseif canImport(AppKit)
+    let attributes: [NSAttributedString.Key: Any] = [
+      .font: NSFont.systemFont(ofSize: 24.0),
+      .foregroundColor: NSColor.systemBlue
+    ]
+    #endif
+    
+    let components = try CommonMarkComponentList(
+      commonmark: commonmark,
+      attributes: attributes).components
+    
+    XCTAssertEqual(components.count, 1)
+    if case .simple(.string(let attributedString)) = components.first {
+      let attributesForItalic = attributedString.attributes(at: 4, effectiveRange: nil)
+      let attributesForBold = attributedString.attributes(at: 25, effectiveRange: nil)
+      
+      #if canImport(UIKit)
+      if let font = attributesForItalic[.font] as? UIFont {
+        XCTAssertTrue(font.fontDescriptor.symbolicTraits.contains(.traitItalic))
+      } else {
+        XCTFail("Expected font attributed in \(attributesForItalic)")
+      }
+      if let font = attributesForBold[.font] as? UIFont {
+        XCTAssertTrue(font.fontDescriptor.symbolicTraits.contains(.traitBold))
+      } else {
+        XCTFail("Expected font attributed in \(attributesForBold)")
+      }
+      #elseif canImport(AppKit)
+      if let font = attributesForItalic[.font] as? NSFont {
+        XCTAssertTrue(font.fontDescriptor.symbolicTraits.contains(.italic))
+      } else {
+        XCTFail("Expected font attributed in \(attributesForItalic)")
+      }
+      if let font = attributesForBold[.font] as? NSFont {
+        XCTAssertTrue(font.fontDescriptor.symbolicTraits.contains(.bold))
+      } else {
+        XCTFail("Expected font attributed in \(attributesForBold)")
+      }
+      #endif
     } else {
       XCTFail("Expected .string to be the first component in \(components)")
     }

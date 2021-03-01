@@ -8,28 +8,29 @@ import AppKit
 #endif
 
 final class CommonMarkAttributedStringTests: XCTestCase {
-    func testReadmeExample() throws {
-        let commonmark = "A *bold* way to add __emphasis__ to your `code`"
-
-        #if canImport(UIKit)
-        let attributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont.systemFont(ofSize: 24.0),
-            .foregroundColor: UIColor.systemBlue
-        ]
-        #elseif canImport(AppKit)
-        let attributes: [NSAttributedString.Key: Any] = [
-            .font: NSFont.systemFont(ofSize: 24.0),
-            .foregroundColor: NSColor.systemBlue
-        ]
-        #endif
-
-        let attributedString = try NSAttributedString(commonmark: commonmark, attributes: attributes)
-
-        XCTAssertEqual(attributedString.string, "A bold way to add emphasis to your code")
-    }
-
-    func testUHDR() throws {
-        let commonmark = #"""
+  
+  func testReadmeExample() throws {
+    let commonmark = "A *bold* way to add __emphasis__ to your `code`"
+    
+    #if canImport(UIKit)
+    let attributes: [NSAttributedString.Key: Any] = [
+      .font: UIFont.systemFont(ofSize: 24.0),
+      .foregroundColor: UIColor.systemBlue
+    ]
+    #elseif canImport(AppKit)
+    let attributes: [NSAttributedString.Key: Any] = [
+      .font: NSFont.systemFont(ofSize: 24.0),
+      .foregroundColor: NSColor.systemBlue
+    ]
+    #endif
+    
+    let attributedString = try NSAttributedString(commonmark: commonmark, attributes: attributes)
+    
+    XCTAssertEqual(attributedString.string, "A bold way to add emphasis to your code")
+  }
+  
+  func testUHDR() throws {
+    let commonmark = #"""
         # [Universal Declaration of Human Rights][uhdr]
 
         ## Article 1.
@@ -40,35 +41,35 @@ final class CommonMarkAttributedStringTests: XCTestCase {
 
         [uhdr]: https://www.un.org/en/universal-declaration-human-rights/ "View full version"
         """#
-
-        #if canImport(UIKit)
-        var attributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont.preferredFont(forTextStyle: .body),
-        ]
-        if #available(iOS 13.0, macCatalyst 13.0, tvOS 13.0, *) {
-            attributes[.foregroundColor] = UIColor.label
-            #if os(iOS)
-            attributes[.backgroundColor] = UIColor.systemBackground
-            #endif
-        } else {
-            attributes[.foregroundColor] = UIColor.black
-            attributes[.backgroundColor] = UIColor.white
-        }
-        #elseif canImport(AppKit)
-        let attributes: [NSAttributedString.Key: Any] = [
-            .font: NSFont.systemFont(ofSize: NSFont.systemFontSize),
-            .foregroundColor: NSColor.textColor,
-            .backgroundColor: NSColor.textBackgroundColor
-        ]
-        #endif
-
-        let attributedString = try NSAttributedString(commonmark: commonmark, attributes: attributes)
-
-        XCTAssert(attributedString.string.starts(with: "Universal Declaration of Human Rights"))
+    
+    #if canImport(UIKit)
+    var attributes: [NSAttributedString.Key: Any] = [
+      .font: UIFont.preferredFont(forTextStyle: .body),
+    ]
+    if #available(iOS 13.0, macCatalyst 13.0, tvOS 13.0, *) {
+      attributes[.foregroundColor] = UIColor.label
+      #if os(iOS)
+      attributes[.backgroundColor] = UIColor.systemBackground
+      #endif
+    } else {
+      attributes[.foregroundColor] = UIColor.black
+      attributes[.backgroundColor] = UIColor.white
     }
-
-    func testHeaderFont() throws {
-        let commonmark = #"""
+    #elseif canImport(AppKit)
+    let attributes: [NSAttributedString.Key: Any] = [
+      .font: NSFont.systemFont(ofSize: NSFont.systemFontSize),
+      .foregroundColor: NSColor.textColor,
+      .backgroundColor: NSColor.textBackgroundColor
+    ]
+    #endif
+    
+    let attributedString = try NSAttributedString(commonmark: commonmark, attributes: attributes)
+    
+    XCTAssert(attributedString.string.starts(with: "Universal Declaration of Human Rights"))
+  }
+  
+  func testHeaderFont() throws {
+    let commonmark = #"""
         # Helvetica
 
         > You can say, "I love you," in Helvetica.
@@ -80,54 +81,98 @@ final class CommonMarkAttributedStringTests: XCTestCase {
         >
         > ― Massimo Vignelli
         """#
-
-        #if canImport(UIKit)
-        let font = UIFont.boldSystemFont(ofSize: 10)
-        let attributedString = try NSAttributedString(commonmark: commonmark, attributes: [.font: font])
-        let actualAttributes = attributedString.attributes(at: 0, effectiveRange: nil)
-
-        XCTAssertEqual((actualAttributes[.font] as? UIFont)?.fontName, font.fontName)
-        XCTAssertGreaterThan((actualAttributes[.font] as? UIFont)?.pointSize ?? 0, font.pointSize)
-        #elseif canImport(AppKit)
-        let font = NSFont.boldSystemFont(ofSize: 10)
-        let attributedString = try NSAttributedString(commonmark: commonmark, attributes: [.font: font])
-        let actualAttributes = attributedString.attributes(at: 0, effectiveRange: nil)
-
-        XCTAssertEqual((actualAttributes[.font] as? NSFont)?.displayName, font.displayName)
-        XCTAssertGreaterThan((actualAttributes[.font] as? NSFont)?.pointSize ?? 0, font.pointSize)
-        #endif
-    }
+    
+    #if canImport(UIKit)
+    let font = UIFont.boldSystemFont(ofSize: 10)
+    let attributedString = try NSAttributedString(commonmark: commonmark, attributes: [.font: font])
+    let actualAttributes = attributedString.attributes(at: 0, effectiveRange: nil)
+    
+    XCTAssertEqual((actualAttributes[.font] as? UIFont)?.fontName, font.fontName)
+    XCTAssertGreaterThan((actualAttributes[.font] as? UIFont)?.pointSize ?? 0, font.pointSize)
+    #elseif canImport(AppKit)
+    let font = NSFont.boldSystemFont(ofSize: 10)
+    let attributedString = try NSAttributedString(commonmark: commonmark, attributes: [.font: font])
+    let actualAttributes = attributedString.attributes(at: 0, effectiveRange: nil)
+    
+    XCTAssertEqual((actualAttributes[.font] as? NSFont)?.displayName, font.displayName)
+    XCTAssertGreaterThan((actualAttributes[.font] as? NSFont)?.pointSize ?? 0, font.pointSize)
+    #endif
+  }
   
-    func testListIndents() throws {
-      let commonmark = """
+  func testListIndents() throws {
+    let commonmark = """
       1. Cut a piece of paper into a 1.5\" x 11\" strip.
       1. Roll it around your straw and tape it in three places to hold it's shape. The straw shown here is a paper straw made using the instructions in a prior step of this project.
       """
-
-      #if canImport(UIKit)
-      let attributes: [NSAttributedString.Key: Any] = [
-          .font: UIFont.systemFont(ofSize: 24.0),
-          .foregroundColor: UIColor.systemBlue
-      ]
-      #elseif canImport(AppKit)
-      let attributes: [NSAttributedString.Key: Any] = [
-          .font: NSFont.systemFont(ofSize: 24.0),
-          .foregroundColor: NSColor.systemBlue
-      ]
-      #endif
-
-      #if canImport(UIKit)
-      let attributedString = try NSAttributedString(commonmark: commonmark, attributes: attributes)
-      XCTAssertEqual(attributedString.string, "1.\tCut a piece of paper into a 1.5\" x 11\" strip.\u{2029}2.\tRoll it around your straw and tape it in three places to hold it's shape. The straw shown here is a paper straw made using the instructions in a prior step of this project.")
-      
-      if let paragraphStyle = attributedString.attribute(.paragraphStyle, at: 0, effectiveRange: nil) as? NSParagraphStyle {
-        XCTAssertEqual(paragraphStyle.headIndent, 48)
-      } else {
-        XCTFail("Expected a paragraphStyle at index 0")
-      }
-      #elseif canImport(AppKit)
-      let attributedString = try NSAttributedString(commonmark: commonmark, attributes: attributes)
-      XCTAssertEqual(attributedString.string, "1\tCut a piece of paper into a 1.5\" x 11\" strip.\u{2029}2\tRoll it around your straw and tape it in three places to hold it's shape. The straw shown here is a paper straw made using the instructions in a prior step of this project.")
-      #endif
+    
+    #if canImport(UIKit)
+    let attributes: [NSAttributedString.Key: Any] = [
+      .font: UIFont.systemFont(ofSize: 24.0),
+      .foregroundColor: UIColor.systemBlue
+    ]
+    #elseif canImport(AppKit)
+    let attributes: [NSAttributedString.Key: Any] = [
+      .font: NSFont.systemFont(ofSize: 24.0),
+      .foregroundColor: NSColor.systemBlue
+    ]
+    #endif
+    
+    #if canImport(UIKit)
+    let attributedString = try NSAttributedString(commonmark: commonmark, attributes: attributes)
+    XCTAssertEqual(attributedString.string, "1.\tCut a piece of paper into a 1.5\" x 11\" strip.\u{2029}2.\tRoll it around your straw and tape it in three places to hold it's shape. The straw shown here is a paper straw made using the instructions in a prior step of this project.")
+    
+    if let paragraphStyle = attributedString.attribute(.paragraphStyle, at: 0, effectiveRange: nil) as? NSParagraphStyle {
+      XCTAssertEqual(paragraphStyle.headIndent, 48)
+    } else {
+      XCTFail("Expected a paragraphStyle at index 0")
     }
+    #elseif canImport(AppKit)
+    let attributedString = try NSAttributedString(commonmark: commonmark, attributes: attributes)
+    XCTAssertEqual(attributedString.string, "1\tCut a piece of paper into a 1.5\" x 11\" strip.\u{2029}2\tRoll it around your straw and tape it in three places to hold it's shape. The straw shown here is a paper straw made using the instructions in a prior step of this project.")
+    #endif
+  }
+  
+  func testBasicAttributes() throws {
+    let commonmark = "A *bold* way to add __emphasis__ to your `code`"
+    
+    #if canImport(UIKit)
+    let attributes: [NSAttributedString.Key: Any] = [
+      .font: UIFont.systemFont(ofSize: 24.0),
+      .foregroundColor: UIColor.systemBlue
+    ]
+    #elseif canImport(AppKit)
+    let attributes: [NSAttributedString.Key: Any] = [
+      .font: NSFont.systemFont(ofSize: 24.0),
+      .foregroundColor: NSColor.systemBlue
+    ]
+    #endif
+    
+    let attributedString = try NSAttributedString(commonmark: commonmark, attributes: attributes)
+    let attributesForItalic = attributedString.attributes(at: 4, effectiveRange: nil)
+    let attributesForBold = attributedString.attributes(at: 25, effectiveRange: nil)
+    
+    #if canImport(UIKit)
+    if let font = attributesForItalic[.font] as? UIFont {
+      XCTAssertTrue(font.fontDescriptor.symbolicTraits.contains(.traitItalic))
+    } else {
+      XCTFail("Expected font attributed in \(attributesForItalic)")
+    }
+    if let font = attributesForBold[.font] as? UIFont {
+      XCTAssertTrue(font.fontDescriptor.symbolicTraits.contains(.traitBold))
+    } else {
+      XCTFail("Expected font attributed in \(attributesForBold)")
+    }
+    #elseif canImport(AppKit)
+    if let font = attributesForItalic[.font] as? NSFont {
+      XCTAssertTrue(font.fontDescriptor.symbolicTraits.contains(.italic))
+    } else {
+      XCTFail("Expected font attributed in \(attributesForItalic)")
+    }
+    if let font = attributesForBold[.font] as? NSFont {
+      XCTAssertTrue(font.fontDescriptor.symbolicTraits.contains(.bold))
+    } else {
+      XCTFail("Expected font attributed in \(attributesForBold)")
+    }
+    #endif
+  }
 }
