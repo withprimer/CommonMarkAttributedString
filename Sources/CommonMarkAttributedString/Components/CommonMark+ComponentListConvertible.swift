@@ -154,11 +154,12 @@ extension Node: ComponentListConvertible {
     tokenizer: Tokenizer,
     attributes: [NSAttributedString.Key: Any]) throws -> [CommonMarkComponent]
   {
+    let overriddenAttributes = container.attributes(with: attributes)
     return try makeBlockContainerComponents(
       for: container.description.unescapedForCommonmark(),
       children: container.children,
       tokenizer: tokenizer,
-      attributes: attributes).joined(separator: "\u{2029}")
+      attributes: overriddenAttributes).joined(separator: "\u{2029}")
   }
 
   private func makeBlockContainerComponents(
@@ -192,16 +193,19 @@ extension Node: ComponentListConvertible {
     tokenizer: Tokenizer,
     attributes: [NSAttributedString.Key: Any]) throws -> [CommonMarkComponent]
   {
+    let overriddenAttributes = container.attributes(with: attributes)
+    
     guard !container.children.contains(where: { $0 is RawHTML }) else {
       let html = try Document(container.description).render(format: .html)
-      let htmlString = try NSAttributedString(html: html, attributes: attributes) ?? NSAttributedString()
+      let htmlString = try NSAttributedString(html: html, attributes: overriddenAttributes) ?? NSAttributedString()
       return [.simple(.string(htmlString))]
     }
+    
     return try foldedComponents(
       for: container.description.unescapedForCommonmark(),
       children: container.children,
       tokenizer: tokenizer,
-      attributes: attributes).joined()
+      attributes: overriddenAttributes).joined()
   }
   
   /// "Folds" the child elements into their `NSAttributedString`s when applicable, breaking them apart when images or extensions are encountered
